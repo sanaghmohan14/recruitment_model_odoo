@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="channel_job_portal" model="manpower.posting.channel">
+            <field name="name">Job Portals</field>
+        </record>
+        <record id="channel_linkedin" model="manpower.posting.channel">
+            <field name="name">LinkedIn</field>
+        </record>
+        <record id="channel_social_media" model="manpower.posting.channel">
+            <field name="name">Social Media</field>
+        </record>
+        <record id="channel_agency" model="manpower.posting.channel">
+            <field name="name">Recruitment Agencies</field>
+        </record>
+        <record id="channel_referral" model="manpower.posting.channel">
+            <field name="name">Employee Referrals</field>
+        </record>
+        <record id="channel_internal_db" model="manpower.posting.channel">
+            <field name="name">Internal Database</field>
+        </record>
+        <record id="channel_other" model="manpower.posting.channel">
+            <field name="name">Other</field>
+        </record>
+    </data>
+</odoo>

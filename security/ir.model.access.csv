@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_requirement_dept_head,manpower.requirement dept head,model_manpower_requirement,group_dept_head,1,1,1,0
+access_requirement_hr,manpower.requirement hr,model_manpower_requirement,group_hr,1,1,1,1
+access_requirement_ceo,manpower.requirement ceo,model_manpower_requirement,group_ceo,1,1,0,0
+access_opening_dept_head,manpower.job.opening dept head,model_manpower_job_opening,group_dept_head,1,0,0,0
+access_opening_hr,manpower.job.opening hr,model_manpower_job_opening,group_hr,1,1,1,1
+access_opening_ceo,manpower.job.opening ceo,model_manpower_job_opening,group_ceo,1,0,0,0
+access_channel_dept_head,manpower.posting.channel dept head,model_manpower_posting_channel,group_dept_head,1,0,0,0
+access_channel_hr,manpower.posting.channel hr,model_manpower_posting_channel,group_hr,1,1,1,1
+access_channel_ceo,manpower.posting.channel ceo,model_manpower_posting_channel,group_ceo,1,0,0,0

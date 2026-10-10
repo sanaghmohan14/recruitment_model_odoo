@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_job_opening_form" model="ir.ui.view">
+        <field name="name">manpower.job.opening.form</field>
+        <field name="model">manpower.job.opening</field>
+        <field name="arch" type="xml">
+            <form string="Job Opening">
+                <header>
+                    <button name="action_publish" string="Publish" type="object" class="btn-primary"
+                            invisible="state != 'draft'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_close" string="Close" type="object"
+                            invisible="state != 'published'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state not in ('draft', 'published')"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ('closed', 'cancelled')"
+                            groups="manpower_requisition.group_hr"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,published,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="requirement_id" readonly="state != 'draft'"/>
+                            <field name="title" readonly="state != 'draft'"/>
+                            <field name="department_id" readonly="state != 'draft'"/>
+                            <field name="client_id"/>
+                            <field name="vacancies" readonly="state != 'draft'"/>
+                            <field name="location" readonly="state != 'draft'"/>
+                            <field name="qualification" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <label for="experience_min" string="Experience (yrs)"/>
+                            <div class="o_row">
+                                <field name="experience_min" readonly="state != 'draft'"/> -
+                                <field name="experience_max" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="currency_id" invisible="1"/>
+                            <label for="salary_min" string="Salary Range"/>
+                            <div class="o_row">
+                                <field name="salary_min" readonly="state != 'draft'"/> -
+                                <field name="salary_max" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="channel_ids" widget="many2many_tags"
+                                   readonly="state not in ('draft', 'published')"/>
+                            <field name="posting_date"/>
+                            <field name="closing_date" readonly="state in ('closed', 'cancelled')"/>
+                            <field name="published_by_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Job Description" name="jd">
+                            <field name="jd_approved"/>
+                            <field name="description" readonly="state != 'draft'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_manpower_job_opening_list" model="ir.ui.view">
+        <field name="name">manpower.job.opening.list</field>
+        <field name="model">manpower.job.opening</field>
+        <field name="arch" type="xml">
+            <list string="Job Openings" decoration-success="state == 'published'"
+                  decoration-muted="state in ('closed', 'cancelled')">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="client_id" optional="show"/>
+                <field name="department_id"/>
+                <field name="vacancies"/>
+                <field name="location" optional="show"/>
+                <field name="posting_date"/>
+                <field name="closing_date" optional="show"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_manpower_job_opening_search" model="ir.ui.view">
+        <field name="name">manpower.job.opening.search</field>
+        <field name="model">manpower.job.opening</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="client_id"/>
+                <field name="department_id"/>
+                <filter name="f_published" string="Published" domain="[('state', '=', 'published')]"/>
+                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="f_closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <group>
+                    <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="g_client" string="Client" context="{'group_by': 'client_id'}"/>
+                    <filter name="g_dept" string="Department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_job_opening" model="ir.actions.act_window">
+        <field name="name">Job Openings</field>
+        <field name="res_model">manpower.job.opening</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No job openings yet</p>
+            <p>Open an approved requirement and click "Create Job Opening".</p>
+        </field>
+    </record>
+
+    <record id="view_manpower_posting_channel_list" model="ir.ui.view">
+        <field name="name">manpower.posting.channel.list</field>
+        <field name="model">manpower.posting.channel</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_manpower_posting_channel" model="ir.actions.act_window">
+        <field name="name">Posting Channels</field>
+        <field name="res_model">manpower.posting.channel</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

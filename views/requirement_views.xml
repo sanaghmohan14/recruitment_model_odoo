@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_requirement_form" model="ir.ui.view">
+        <field name="name">manpower.requirement.form</field>
+        <field name="model">manpower.requirement</field>
+        <field name="arch" type="xml">
+            <form string="Manpower Requirement">
+                <header>
+                    <button name="action_submit" string="Submit to HR" type="object" class="btn-primary"
+                            invisible="state != 'draft'"
+                            groups="manpower_requisition.group_dept_head"/>
+                    <button name="action_send_for_approval" string="Send to CEO" type="object" class="btn-primary"
+                            invisible="state != 'hr_review'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-primary"
+                            invisible="state != 'pending_approval'"
+                            groups="manpower_requisition.group_ceo"/>
+                    <button name="action_reject" string="Reject" type="object"
+                            invisible="state not in ('hr_review', 'pending_approval')"
+                            groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
+                    <button name="action_create_opening" string="Create Job Opening" type="object" class="btn-primary"
+                            invisible="state != 'approved'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ('hr_review', 'rejected')"
+                            groups="manpower_requisition.group_hr"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,hr_review,pending_approval,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_openings" type="object" class="oe_stat_button"
+                                icon="fa-briefcase" invisible="opening_count == 0">
+                            <field name="opening_count" widget="statinfo" string="Job Openings"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Client Call">
+                            <field name="client_id" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="client_contact" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="call_date" readonly="state not in ('draft', 'hr_review')"/>
+                        </group>
+                        <group string="Request">
+                            <field name="requested_by_id"/>
+                            <field name="department_id" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Requirement" name="requirement">
+                            <group>
+                                <group string="Position">
+                                    <field name="job_title" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="vacancies" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="qualification" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="location" readonly="state not in ('draft', 'hr_review')"/>
+                                </group>
+                                <group string="Joining">
+                                    <field name="joining_requirement" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="joining_date" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="reason" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="reason_note" readonly="state not in ('draft', 'hr_review')"/>
+                                </group>
+                            </group>
+                            <field name="call_notes" placeholder="Notes from the client's phone call..."
+                                   readonly="state not in ('draft', 'hr_review')"/>
+                        </page>
+                        <page string="HR Review" name="hr_review">
+                            <group>
+                                <group string="Experience">
+                                    <field name="experience_min" readonly="state != 'hr_review'"/>
+                                    <field name="experience_max" readonly="state != 'hr_review'"/>
+                                </group>
+                                <group string="Salary">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="salary_min" readonly="state != 'hr_review'"/>
+                                    <field name="salary_max" readonly="state != 'hr_review'"/>
+                                </group>
+                            </group>
+                            <field name="hr_notes" placeholder="HR notes..." readonly="state != 'hr_review'"/>
+                        </page>
+                        <page string="Approval" name="approval">
+                            <group>
+                                <group>
+                                    <field name="submitted_date"/>
+                                    <field name="hr_reviewed_by_id"/>
+                                    <field name="approved_by_id"/>
+                                    <field name="approved_date"/>
+                                </group>
+                                <group>
+                                    <field name="reject_reason"
+                                           readonly="state not in ('hr_review', 'pending_approval')"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_manpower_requirement_list" model="ir.ui.view">
+        <field name="name">manpower.requirement.list</field>
+        <field name="model">manpower.requirement</field>
+        <field name="arch" type="xml">
+            <list string="Manpower Requirements"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'"
+                  decoration-info="state == 'pending_approval'">
+                <field name="name"/>
+                <field name="client_id" optional="show"/>
+                <field name="department_id"/>
+                <field name="job_title"/>
+                <field name="vacancies"/>
+                <field name="location" optional="show"/>
+                <field name="requested_by_id" optional="show"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_manpower_requirement_search" model="ir.ui.view">
+        <field name="name">manpower.requirement.search</field>
+        <field name="model">manpower.requirement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="job_title"/>
+                <field name="client_id"/>
+                <field name="department_id"/>
+                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="f_hr" string="HR Review" domain="[('state', '=', 'hr_review')]"/>
+                <filter name="f_pending" string="Pending Approval" domain="[('state', '=', 'pending_approval')]"/>
+                <filter name="f_approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="f_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <group>
+                    <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="g_client" string="Client" context="{'group_by': 'client_id'}"/>
+                    <filter name="g_dept" string="Department" context="{'group_by': 'department_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_requirement" model="ir.actions.act_window">
+        <field name="name">Manpower Requirements</field>
+        <field name="res_model">manpower.requirement</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register a new manpower requirement</p>
+            <p>Record the client's request, then submit it to HR for review.</p>
+        </field>
+    </record>
+</odoo>

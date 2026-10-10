@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_manpower_root" name="Manpower" sequence="45"
+              web_icon="hr,static/description/icon.png"
+              groups="manpower_requisition.group_dept_head,manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
+
+    <menuitem id="menu_manpower_requirement" name="Requirements"
+              parent="menu_manpower_root" action="action_manpower_requirement" sequence="10"/>
+
+    <menuitem id="menu_manpower_job_opening" name="Job Openings"
+              parent="menu_manpower_root" action="action_manpower_job_opening" sequence="20"
+              groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
+
+    <menuitem id="menu_manpower_config" name="Configuration"
+              parent="menu_manpower_root" sequence="90"
+              groups="manpower_requisition.group_hr"/>
+
+    <menuitem id="menu_manpower_posting_channel" name="Posting Channels"
+              parent="menu_manpower_config" action="action_manpower_posting_channel" sequence="10"/>
+</odoo>
