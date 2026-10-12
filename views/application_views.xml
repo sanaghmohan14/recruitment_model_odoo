@@ -47,7 +47,12 @@
                 <field name="mobile" optional="show"/>
                 <field name="email" optional="show"/>
                 <field name="total_experience" optional="show"/>
-                <field name="stage" widget="badge"/>
+                <field name="stage" widget="statusbar" options="{'clickable':'1'}" type="object"
+                       decoration-success="stage == 'contract_signed'"
+                       decoration-danger="stage == 'cancelled'"
+                       decoration-info="stage in ('first_interview', 'second_interview', 'contract_proposal')"
+                       decoration-warning="stage == 'qualification'"
+                       decoration-muted="stage == 'new'"/>
             </list>
         </field>
     </record>
@@ -58,14 +63,32 @@
         <field name="arch" type="xml">
             <form string="Application">
                 <header>
-                    <button name="action_previous_stage" string="Previous Stage" type="object"
-                            invisible="stage == 'new'"
-                            groups="manpower_requisition.group_hr"/>
                     <button name="action_next_stage" string="Next Stage" type="object" class="btn-primary"
-                            invisible="stage == 'contract_signed'"
+                            invisible="stage in ('contract_signed', 'cancelled')"
                             groups="manpower_requisition.group_hr"/>
-                    <field name="stage" widget="statusbar" readonly="1"
-                           statusbar_visible="new,qualification,first_interview,second_interview,contract_proposal,contract_signed"/>
+                    <button name="action_reject" string="Reject" type="object"
+                            invisible="stage not in ('first_interview', 'second_interview')"
+                            groups="manpower_requisition.group_hr"/>
+<!--                    <button name="action_next_stage" string="Next Stage" type="object" class="btn-primary"-->
+<!--                            invisible="stage == 'contract_signed'"-->
+<!--                            groups="manpower_requisition.group_hr"/>-->
+                    <button name="action_open_stage_email_wizard" string="Send Qualification Email" type="object"
+                            invisible="stage != 'qualification'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_open_stage_email_wizard" string="Send First Interview Email" type="object"
+                            invisible="stage != 'first_interview'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_open_stage_email_wizard" string="Send Second Interview Email" type="object"
+                            invisible="stage != 'second_interview'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_open_stage_email_wizard" string="Send Selection Email" type="object"
+                            invisible="stage != 'contract_proposal'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_open_stage_email_wizard" string="Send Offer Letter" type="object"
+                            invisible="stage != 'contract_signed'"
+                            groups="manpower_requisition.group_hr"/>
+                    <field name="stage" widget="statusbar" clickable="1" options="{'clickable': True}"
+                           statusbar_visible="new,qualification,first_interview,second_interview,contract_proposal,contract_signed,cancelled"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -82,6 +105,7 @@
                             <field name="email" widget="email"/>
                             <field name="phone" widget="phone"/>
                             <field name="mobile" widget="phone"/>
+                            <field name="candidate_interest" readonly="1"/>
                         </group>
                         <group string="Personal Details">
                             <field name="photo" widget="image" class="oe_avatar"/>

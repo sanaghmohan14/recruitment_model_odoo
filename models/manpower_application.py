@@ -1,4 +1,7 @@
-from odoo import api, fields, models
+import uuid
+
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 APPLICATION_STAGES = [
@@ -8,6 +11,7 @@ APPLICATION_STAGES = [
     ('second_interview', 'Second Interview'),
     ('contract_proposal', 'Contract Proposal'),
     ('contract_signed', 'Contract Signed'),
+    ('cancelled', 'Cancelled'),
 ]
 APPLICATION_STAGE_SEQUENCE = [stage[0] for stage in APPLICATION_STAGES]
 
@@ -29,6 +33,11 @@ class ManpowerApplication(models.Model):
     stage = fields.Selection(
         APPLICATION_STAGES, string='Stage', default='new', required=True, tracking=True,
         group_expand='_read_group_stage')
+    interest_token = fields.Char(default=lambda self: str(uuid.uuid4()), readonly=True, copy=False)
+    candidate_interest = fields.Selection([
+        ('pending', 'Pending'),
+        ('interested', 'Interested'),
+    ], default='pending', readonly=True, copy=False, tracking=True)
 
     # Applicant details
     email = fields.Char(string='Email')
@@ -89,23 +98,50 @@ class ManpowerApplication(models.Model):
         for vals in vals_list:
             if not vals.get('name') or vals['name'] == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('manpower.application') or 'New'
+            if not vals.get('interest_token'):
+                vals['interest_token'] = str(uuid.uuid4())
         return super().create(vals_list)
 
+    def action_open_stage_email_wizard(self):
+        self.ensure_one()
+        email_type_by_stage = {
+            'qualification': 'qualification',
+            'first_interview': 'first_interview',
+            'second_interview': 'second_interview',
+            'contract_proposal': 'selection',
+            'contract_signed': 'offer',
+        }
+        email_type = email_type_by_stage.get(self.stage)
+        if not email_type:
+            raise UserError(_('There is no email template for the New stage.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Send Application Email'),
+            'res_model': 'manpower.application.email.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_application_id': self.id,
+                'default_email_type': email_type,
+            },
+        }
+
     def action_next_stage(self):
-        """Advance the application through the recruitment process one stage at a time."""
+        """Advance to the next configured application stage."""
         for rec in self:
             stage_index = APPLICATION_STAGE_SEQUENCE.index(rec.stage)
             if stage_index < len(APPLICATION_STAGE_SEQUENCE) - 1:
                 rec.stage = APPLICATION_STAGE_SEQUENCE[stage_index + 1]
 
-    def action_previous_stage(self):
-        """Return the application to the previous stage."""
+    def action_reject(self):
+        """Move an application to Cancelled after an interview."""
         for rec in self:
-            stage_index = APPLICATION_STAGE_SEQUENCE.index(rec.stage)
-            if stage_index > 0:
-                rec.stage = APPLICATION_STAGE_SEQUENCE[stage_index - 1]
+            if rec.stage not in ('first_interview', 'second_interview'):
+                raise UserError(_('An application can only be rejected after an interview.'))
+            rec.stage = 'cancelled'
 
     @api.model
     def _read_group_stage(self, stages, domain):
         """Always show the complete application pipeline in its defined order."""
         return APPLICATION_STAGE_SEQUENCE
+

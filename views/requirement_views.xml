@@ -120,7 +120,12 @@
                 <field name="vacancies"/>
                 <field name="location" optional="show"/>
                 <field name="requested_by_id" optional="show"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-warning="state == 'hr_review'"
+                       decoration-info="state == 'pending_approval'"
+                       decoration-muted="state == 'draft'"/>
             </list>
         </field>
     </record>

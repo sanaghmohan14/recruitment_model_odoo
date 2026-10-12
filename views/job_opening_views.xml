@@ -91,7 +91,11 @@
                 <field name="location" optional="show"/>
                 <field name="posting_date"/>
                 <field name="closing_date" optional="show"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'published'"
+                       decoration-danger="state == 'cancelled'"
+                       decoration-warning="state == 'closed'"
+                       decoration-muted="state == 'draft'"/>
             </list>
         </field>
     </record>
@@ -110,7 +114,11 @@
                 <field name="in_progress_application_count" string="In Progress"/>
                 <field name="activity_ids" widget="list_activity" optional="show"/>
                 <field name="location" optional="show"/>
-                <field name="state" widget="badge"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'published'"
+                       decoration-danger="state == 'cancelled'"
+                       decoration-warning="state == 'closed'"
+                       decoration-muted="state == 'draft'"/>
             </list>
         </field>
     </record>

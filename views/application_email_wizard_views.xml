@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_application_email_wizard_form" model="ir.ui.view">
+        <field name="name">manpower.application.email.wizard.form</field>
+        <field name="model">manpower.application.email.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Application Email">
+                <group>
+                    <field name="application_id"/>
+                    <field name="email_type"/>
+                    <field name="email_to" widget="email"/>
+                    <field name="interview_date"
+                           invisible="email_type not in ('first_interview', 'second_interview')"
+                           required="email_type in ('first_interview', 'second_interview')"/>
+                    <field name="interview_time" widget="float_time"
+                           invisible="email_type not in ('first_interview', 'second_interview')"
+                           required="email_type in ('first_interview', 'second_interview')"/>
+                    <field name="subject"/>
+                </group>
+                <field name="body" widget="html"/>
+                <footer>
+                    <button name="action_send_email" string="Send Email" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

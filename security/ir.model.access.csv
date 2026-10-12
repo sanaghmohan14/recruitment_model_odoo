@@ -14,3 +14,4 @@ access_skill_ceo,manpower.skill ceo,model_manpower_skill,group_ceo,1,0,0,0
 access_application_dept_head,manpower.application dept head,model_manpower_application,group_dept_head,1,0,0,0
 access_application_hr,manpower.application hr,model_manpower_application,group_hr,1,1,1,1
 access_application_ceo,manpower.application ceo,model_manpower_application,group_ceo,1,0,0,0
+access_application_email_wizard_hr,manpower.application.email.wizard hr,model_manpower_application_email_wizard,group_hr,1,1,1,1
