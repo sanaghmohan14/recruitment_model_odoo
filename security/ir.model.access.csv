@@ -8,3 +8,9 @@ access_opening_ceo,manpower.job.opening ceo,model_manpower_job_opening,group_ceo
 access_channel_dept_head,manpower.posting.channel dept head,model_manpower_posting_channel,group_dept_head,1,0,0,0
 access_channel_hr,manpower.posting.channel hr,model_manpower_posting_channel,group_hr,1,1,1,1
 access_channel_ceo,manpower.posting.channel ceo,model_manpower_posting_channel,group_ceo,1,0,0,0
+access_skill_dept_head,manpower.skill dept head,model_manpower_skill,group_dept_head,1,1,1,1
+access_skill_hr,manpower.skill hr,model_manpower_skill,group_hr,1,1,1,1
+access_skill_ceo,manpower.skill ceo,model_manpower_skill,group_ceo,1,0,0,0
+access_application_dept_head,manpower.application dept head,model_manpower_application,group_dept_head,1,0,0,0
+access_application_hr,manpower.application hr,model_manpower_application,group_hr,1,1,1,1
+access_application_ceo,manpower.application ceo,model_manpower_application,group_ceo,1,0,0,0

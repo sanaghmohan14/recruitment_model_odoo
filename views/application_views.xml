@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_application_kanban" model="ir.ui.view">
+        <field name="name">manpower.application.kanban</field>
+        <field name="model">manpower.application</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage">
+                <field name="applicant_name"/>
+                <field name="job_opening_id"/>
+                <field name="stage"/>
+                <field name="mobile"/>
+                <field name="total_experience"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <strong>
+                                <field name="applicant_name"/>
+                            </strong>
+                            <div>
+                                <field name="job_opening_id"/>
+                            </div>
+                            <div t-if="record.mobile.raw_value">
+                                <field name="mobile"/>
+                            </div>
+                             <div t-if="record.email.raw_value">
+                                <field name="email"/>
+                            </div>
+                            <div t-if="record.total_experience.raw_value">
+                                <field name="total_experience"/>
+                                years experience
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_manpower_application_list" model="ir.ui.view">
+        <field name="name">manpower.application.list</field>
+        <field name="model">manpower.application</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="applicant_name"/>
+                <field name="job_opening_id"/>
+                <field name="mobile" optional="show"/>
+                <field name="email" optional="show"/>
+                <field name="total_experience" optional="show"/>
+                <field name="stage" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_manpower_application_form" model="ir.ui.view">
+        <field name="name">manpower.application.form</field>
+        <field name="model">manpower.application</field>
+        <field name="arch" type="xml">
+            <form string="Application">
+                <header>
+                    <button name="action_previous_stage" string="Previous Stage" type="object"
+                            invisible="stage == 'new'"
+                            groups="manpower_requisition.group_hr"/>
+                    <button name="action_next_stage" string="Next Stage" type="object" class="btn-primary"
+                            invisible="stage == 'contract_signed'"
+                            groups="manpower_requisition.group_hr"/>
+                    <field name="stage" widget="statusbar" readonly="1"
+                           statusbar_visible="new,qualification,first_interview,second_interview,contract_proposal,contract_signed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="applicant_name" placeholder="Applicant Name"/>
+                        </h1>
+                        <div>
+                            <field name="name" readonly="1"/>
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Application Details">
+                            <field name="job_opening_id"/>
+                            <field name="email" widget="email"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="mobile" widget="phone"/>
+                        </group>
+                        <group string="Personal Details">
+                            <field name="photo" widget="image" class="oe_avatar"/>
+                            <field name="date_of_birth"/>
+                            <field name="gender"/>
+                        </group>
+                    </group>
+                    <field name="address" placeholder="Address..."/>
+                    <notebook>
+                        <page string="Salary Details">
+                            <group>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="current_salary"/>
+                                <field name="expected_salary"/>
+                                <field name="notice_period"/>
+                            </group>
+                        </page>
+                        <page string="Academic Details">
+                            <group>
+                                <field name="highest_qualification"/>
+                                <field name="specialization"/>
+                                <field name="institution"/>
+                                <field name="graduation_year"/>
+                            </group>
+                        </page>
+                        <page string="Experience Details">
+                            <group>
+                                <field name="total_experience"/>
+                                <field name="current_employer"/>
+                                <field name="current_designation"/>
+                            </group>
+                            <field name="experience_details" placeholder="Employment history and responsibilities..."/>
+                        </page>
+                        <page string="Documents">
+                            <group>
+                                <field name="resume" filename="resume_filename"/>
+                                <field name="aadhaar_document" filename="aadhaar_document_filename"/>
+                                <field name="pan_document" filename="pan_document_filename"/>
+                                <field name="bank_document" filename="bank_document_filename"/>
+                                <field name="experience_document" filename="experience_document_filename"/>
+                            </group>
+                        </page>
+                        <page string="Bank Details">
+                            <group>
+                                <field name="aadhaar_number"/>
+                                <field name="pan_number"/>
+                                <field name="bank_name"/>
+                                <field name="account_holder_name"/>
+                                <field name="account_number" password="True"/>
+                                <field name="ifsc_code"/>
+                            </group>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" placeholder="Internal notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_manpower_application_search" model="ir.ui.view">
+        <field name="name">manpower.application.search</field>
+        <field name="model">manpower.application</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="applicant_name"/>
+                <field name="job_opening_id"/>
+                <field name="email"/>
+                <group>
+                    <filter name="group_by_position" string="Job Position" context="{'group_by': 'job_opening_id'}"/>
+                    <filter name="group_by_stage" string="Stage" context="{'group_by': 'stage'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_application" model="ir.actions.act_window">
+        <field name="name">Applications</field>
+        <field name="res_model">manpower.application</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'group_by': 'stage'}</field>
+    </record>
+</odoo>

@@ -32,6 +32,7 @@ class ManpowerRequirement(models.Model):
     job_title = fields.Char(string='Position', required=True, tracking=True)
     vacancies = fields.Integer(string='Number of Vacancies', default=1, tracking=True)
     qualification = fields.Char(string='Qualification')
+    skill_ids = fields.Many2many('manpower.skill', string='Skills')
     location = fields.Char(string='Location')
     reason = fields.Selection([
         ('new_position', 'New Position'),
@@ -196,9 +197,19 @@ class ManpowerRequirement(models.Model):
             raise UserError(_('A job opening can only be created from an approved requirement.'))
         opening = self.env['manpower.job.opening'].create({
             'requirement_id': self.id,
-            # `title` is required. Supply it at create time because stored computed
-            # values are populated only after the record passes required-field checks.
+            # Copy the approved requirement so the opening is fully populated as
+            # soon as its form is displayed.
             'title': self.job_title,
+            'department_id': self.department_id.id,
+            'vacancies': self.vacancies,
+            'location': self.location,
+            'qualification': self.qualification,
+            'skill_ids': [(6, 0, self.skill_ids.ids)],
+            'experience_min': self.experience_min,
+            'experience_max': self.experience_max,
+            'currency_id': self.currency_id.id,
+            'salary_min': self.salary_min,
+            'salary_max': self.salary_max,
         })
         return {
             'type': 'ir.actions.act_window',

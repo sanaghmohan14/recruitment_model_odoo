@@ -11,10 +11,23 @@
               parent="menu_manpower_root" action="action_manpower_job_opening" sequence="20"
               groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
 
+    <menuitem id="menu_manpower_application" name="Applications"
+              parent="menu_manpower_root" sequence="30"
+              groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
+
+    <menuitem id="menu_manpower_application_all" name="All Applications"
+              parent="menu_manpower_application" action="action_manpower_application" sequence="10"/>
+
+    <menuitem id="menu_manpower_application_by_position" name="By Job Position"
+              parent="menu_manpower_application" action="action_manpower_application_by_position" sequence="20"/>
+
     <menuitem id="menu_manpower_config" name="Configuration"
               parent="menu_manpower_root" sequence="90"
-              groups="manpower_requisition.group_hr"/>
+              groups="manpower_requisition.group_hr,manpower_requisition.group_dept_head"/>
 
     <menuitem id="menu_manpower_posting_channel" name="Posting Channels"
               parent="menu_manpower_config" action="action_manpower_posting_channel" sequence="10"/>
+
+    <menuitem id="menu_manpower_skill" name="Skills"
+              parent="menu_manpower_config" action="action_manpower_skill" sequence="20"/>
 </odoo>

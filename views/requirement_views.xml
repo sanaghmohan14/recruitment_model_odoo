@@ -56,6 +56,8 @@
                                     <field name="job_title" readonly="state not in ('draft', 'hr_review')"/>
                                     <field name="vacancies" readonly="state not in ('draft', 'hr_review')"/>
                                     <field name="qualification" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="skill_ids" widget="many2many_tags"
+                                           readonly="state not in ('draft', 'hr_review')"/>
                                     <field name="location" readonly="state not in ('draft', 'hr_review')"/>
                                 </group>
                                 <group string="Joining">

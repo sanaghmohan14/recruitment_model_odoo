@@ -17,8 +17,13 @@ class ManpowerJobOpening(models.Model):
     _description = 'Job Opening'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'id desc'
+    _rec_name = 'title'
 
     name = fields.Char(string='Reference', default='New', readonly=True, copy=False)
+    application_ids = fields.One2many('manpower.application', 'job_opening_id', string='Applications')
+    application_count = fields.Integer(compute='_compute_application_count')
+    new_application_count = fields.Integer(compute='_compute_application_count', string='New Applications')
+    in_progress_application_count = fields.Integer(compute='_compute_application_count', string='In Progress')
     requirement_id = fields.Many2one(
         'manpower.requirement', string='Requirement', required=True,
         domain="[('state', '=', 'approved')]", ondelete='restrict', tracking=True)
@@ -38,6 +43,7 @@ class ManpowerJobOpening(models.Model):
     vacancies = fields.Integer(compute='_compute_from_requirement', store=True, readonly=False)
     location = fields.Char(compute='_compute_from_requirement', store=True, readonly=False)
     qualification = fields.Char(compute='_compute_from_requirement', store=True, readonly=False)
+    skill_ids = fields.Many2many('manpower.skill', string='Skills')
     experience_min = fields.Float(compute='_compute_from_requirement', store=True, readonly=False)
     experience_max = fields.Float(compute='_compute_from_requirement', store=True, readonly=False)
     currency_id = fields.Many2one('res.currency', compute='_compute_from_requirement',
@@ -57,6 +63,25 @@ class ManpowerJobOpening(models.Model):
     closing_date = fields.Date()
     published_by_id = fields.Many2one('res.users', readonly=True, copy=False)
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
+
+    @api.depends('application_ids', 'application_ids.stage')
+    def _compute_application_count(self):
+        for rec in self:
+            rec.application_count = len(rec.application_ids)
+            rec.new_application_count = len(rec.application_ids.filtered(lambda app: app.stage == 'new'))
+            rec.in_progress_application_count = len(rec.application_ids.filtered(
+                lambda app: app.stage not in ('new', 'contract_signed')))
+
+    def action_view_applications(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Applications'),
+            'res_model': 'manpower.application',
+            'view_mode': 'kanban,list,form',
+            'domain': [('job_opening_id', '=', self.id)],
+            'context': {'default_job_opening_id': self.id, 'group_by': 'stage'},
+        }
 
     @api.depends('requirement_id')
     def _compute_from_requirement(self):
