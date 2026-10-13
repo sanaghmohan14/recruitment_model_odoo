@@ -161,6 +161,9 @@
                         <page string="Notes">
                             <field name="notes" placeholder="Internal notes..."/>
                         </page>
+                        <page string="Rejection" invisible="not reject_reason">
+                            <field name="reject_reason" readonly="1"/>
+                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>

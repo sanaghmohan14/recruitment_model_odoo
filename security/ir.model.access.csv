@@ -15,3 +15,6 @@ access_application_dept_head,manpower.application dept head,model_manpower_appli
 access_application_hr,manpower.application hr,model_manpower_application,group_hr,1,1,1,1
 access_application_ceo,manpower.application ceo,model_manpower_application,group_ceo,1,0,0,0
 access_application_email_wizard_hr,manpower.application.email.wizard hr,model_manpower_application_email_wizard,group_hr,1,1,1,1
+access_application_reject_wizard_hr,manpower.application.reject.wizard hr,model_manpower_application_reject_wizard,group_hr,1,1,1,1
+access_requirement_reject_wizard_hr,manpower.requirement.reject.wizard hr,model_manpower_requirement_reject_wizard,group_hr,1,1,1,1
+access_requirement_reject_wizard_ceo,manpower.requirement.reject.wizard ceo,model_manpower_requirement_reject_wizard,group_ceo,1,1,1,1

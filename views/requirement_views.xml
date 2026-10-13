@@ -92,10 +92,6 @@
                                     <field name="approved_by_id"/>
                                     <field name="approved_date"/>
                                 </group>
-                                <group>
-                                    <field name="reject_reason"
-                                           readonly="state not in ('hr_review', 'pending_approval')"/>
-                                </group>
                             </group>
                         </page>
                     </notebook>

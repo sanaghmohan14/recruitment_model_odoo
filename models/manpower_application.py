@@ -38,6 +38,7 @@ class ManpowerApplication(models.Model):
         ('pending', 'Pending'),
         ('interested', 'Interested'),
     ], default='pending', readonly=True, copy=False, tracking=True)
+    reject_reason = fields.Text(string='Rejection Reason', copy=False, tracking=True)
 
     # Applicant details
     email = fields.Char(string='Email')
@@ -134,14 +135,20 @@ class ManpowerApplication(models.Model):
                 rec.stage = APPLICATION_STAGE_SEQUENCE[stage_index + 1]
 
     def action_reject(self):
-        """Move an application to Cancelled after an interview."""
-        for rec in self:
-            if rec.stage not in ('first_interview', 'second_interview'):
-                raise UserError(_('An application can only be rejected after an interview.'))
-            rec.stage = 'cancelled'
+        """Open the rejection-reason wizard for an interviewed application."""
+        self.ensure_one()
+        if self.stage not in ('first_interview', 'second_interview'):
+            raise UserError(_('An application can only be rejected after an interview.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Reject Application'),
+            'res_model': 'manpower.application.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_application_id': self.id},
+        }
 
     @api.model
     def _read_group_stage(self, stages, domain):
         """Always show the complete application pipeline in its defined order."""
         return APPLICATION_STAGE_SEQUENCE
-

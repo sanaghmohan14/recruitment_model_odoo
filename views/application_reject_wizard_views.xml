@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_application_reject_wizard_form" model="ir.ui.view">
+        <field name="name">manpower.application.reject.wizard.form</field>
+        <field name="model">manpower.application.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reject Application">
+                <group>
+                    <field name="application_id"/>
+                    <field name="reject_reason" placeholder="Enter the reason for rejection..."/>
+                </group>
+                <footer>
+                    <button name="action_confirm_reject" string="Reject" type="object" class="btn-danger"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

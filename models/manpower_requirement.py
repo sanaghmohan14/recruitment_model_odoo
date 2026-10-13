@@ -173,17 +173,22 @@ class ManpowerRequirement(models.Model):
         self._notify_group(GROUP_HR, _('The requirement has been approved. You can now create the job opening.'))
 
     def action_reject(self):
-        """HR (during review) or CEO (during approval) rejects."""
-        for rec in self:
-            if rec.state == 'hr_review':
-                rec._check_group(GROUP_HR)
-            elif rec.state == 'pending_approval':
-                rec._check_group(GROUP_CEO)
-            else:
-                raise UserError(_('This requirement cannot be rejected in its current state.'))
-            if not rec.reject_reason:
-                raise UserError(_('Please enter a Rejection Reason before rejecting.'))
-        self.write({'state': 'rejected'})
+        """Open the rejection-reason wizard for HR or CEO review."""
+        self.ensure_one()
+        if self.state == 'hr_review':
+            self._check_group(GROUP_HR)
+        elif self.state == 'pending_approval':
+            self._check_group(GROUP_CEO)
+        else:
+            raise UserError(_('This requirement cannot be rejected in its current state.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Reject Manpower Requirement'),
+            'res_model': 'manpower.requirement.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_requirement_id': self.id},
+        }
 
     def action_reset_draft(self):
         self._check_group(GROUP_HR)

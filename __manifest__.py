@@ -19,6 +19,8 @@ Workflow: Dept Head registers the client's requirement -> HR reviews experience/
         'views/job_opening_views.xml',
         'views/application_views.xml',
         'views/application_email_wizard_views.xml',
+        'views/application_reject_wizard_views.xml',
+        'views/requirement_reject_wizard_views.xml',
         'views/menus.xml',
     ],
     'application': True,
