@@ -115,9 +115,12 @@ class ManpowerRequirement(models.Model):
             raise UserError(_('Only draft or rejected requirements can be deleted.'))
         return super().unlink()
 
-    # ------------------------------------------------------------------
+
+
+
     # Helpers
-    # ------------------------------------------------------------------
+
+
     def _check_group(self, xmlid):
         if not self.env.su and not self.env.user.has_group(xmlid):
             raise AccessError(_('You are not allowed to perform this action.'))
@@ -133,9 +136,9 @@ class ManpowerRequirement(models.Model):
                 subtype_xmlid='mail.mt_comment',
             )
 
-    # ------------------------------------------------------------------
+
     # Workflow
-    # ------------------------------------------------------------------
+
     def action_submit(self):
         """Department head -> HR."""
         self._check_group(GROUP_DEPT_HEAD)

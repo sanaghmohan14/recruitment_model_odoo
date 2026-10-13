@@ -23,6 +23,11 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
+                        <button name="action_view_website" type="object" class="oe_stat_button"
+                                icon="fa-globe" invisible="state != 'published'"
+                                groups="manpower_requisition.group_hr">
+                            <span class="o_stat_text">Go to Website</span>
+                        </button>
                         <button name="action_view_applications" type="object" class="oe_stat_button"
                                 icon="fa-users">
                             <field name="application_count" widget="statinfo" string="Applications"/>

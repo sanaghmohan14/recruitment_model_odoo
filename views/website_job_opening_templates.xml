@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="manpower_job_opening_list" name="Manpower Job Openings">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5">
+                    <h1>Open Positions</h1>
+                    <div class="row mt-4">
+                        <t t-foreach="jobs" t-as="job">
+                            <div class="col-lg-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h3><a t-att-href="job._get_website_url()"><t t-esc="job.title"/></a></h3>
+                                        <p t-if="job.location"><i class="fa fa-map-marker me-2"/><t t-esc="job.location"/></p>
+                                        <p t-if="job.vacancies"><strong>Openings:</strong> <t t-esc="job.vacancies"/></p>
+                                        <a class="btn btn-primary" t-att-href="job._get_website_url()">View Job</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                    <p t-if="not jobs">There are no open positions at the moment.</p>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="manpower_job_opening_detail" name="Manpower Job Opening Detail">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h1 t-esc="job.title"/>
+                            <p t-if="job.location"><i class="fa fa-map-marker me-2"/><t t-esc="job.location"/></p>
+                            <p t-if="job.qualification"><strong>Qualification:</strong> <t t-esc="job.qualification"/></p>
+                            <p t-if="job.vacancies"><strong>Openings:</strong> <t t-esc="job.vacancies"/></p>
+                            <div t-field="job.description"/>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3>Apply for this position</h3>
+                                    <p class="text-danger" t-if="error" t-esc="error"/>
+                                    <form t-att-action="job._get_website_url() + '/apply'" method="post">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <div class="mb-3"><label class="form-label">Name</label><input name="applicant_name" required="required" class="form-control"/></div>
+                                        <div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" required="required" class="form-control"/></div>
+                                        <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control"/></div>
+                                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <template id="manpower_job_application_thanks" name="Manpower Job Application Thanks">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5 text-center">
+                    <h1>Thank you for applying</h1>
+                    <p>Your application for <strong t-esc="job.title"/> has been received.</p>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

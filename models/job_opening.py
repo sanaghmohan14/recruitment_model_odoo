@@ -64,6 +64,21 @@ class ManpowerJobOpening(models.Model):
     published_by_id = fields.Many2one('res.users', readonly=True, copy=False)
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
 
+    def _get_website_url(self):
+        self.ensure_one()
+        return '/manpower/jobs/%s' % self.id
+
+    def action_view_website(self):
+        self.ensure_one()
+        if self.state != 'published':
+            raise ValidationError(_('Only published job openings can be viewed on the website.'))
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '%s%s' % (base_url.rstrip('/'), self._get_website_url()),
+            'target': 'new',
+        }
+
     @api.depends('application_ids', 'application_ids.stage')
     def _compute_application_count(self):
         for rec in self:
