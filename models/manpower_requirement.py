@@ -20,6 +20,11 @@ class ManpowerRequirement(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
     ], default='draft', tracking=True, copy=False, required=True)
+    request_type = fields.Selection([
+        ('client', 'Client Requirement'),
+        ('hiring', 'Hiring Request'),
+    ], string='Request Type', default='client', required=True, tracking=True,
+       copy=False)
 
     # Client call details (we act as a mediator for the client)
     client_id = fields.Many2one('res.partner', string='Client', tracking=True)

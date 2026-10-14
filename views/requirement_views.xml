@@ -44,8 +44,11 @@
                             <field name="call_date" readonly="state not in ('draft', 'hr_review')"/>
                         </group>
                         <group string="Request">
+                            <field name="request_type"/>
                             <field name="requested_by_id"/>
-                            <field name="department_id" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="department_id"
+                                   invisible="request_type == 'hiring'"
+                                   readonly="state not in ('draft', 'hr_review')"/>
                             <field name="company_id" invisible="1"/>
                         </group>
                     </group>
@@ -110,8 +113,9 @@
                   decoration-danger="state == 'rejected'"
                   decoration-info="state == 'pending_approval'">
                 <field name="name"/>
+                <field name="request_type" optional="show"/>
                 <field name="client_id" optional="show"/>
-                <field name="department_id"/>
+                <field name="department_id" optional="hide"/>
                 <field name="job_title"/>
                 <field name="vacancies"/>
                 <field name="location" optional="show"/>
