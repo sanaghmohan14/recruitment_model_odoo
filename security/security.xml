@@ -18,6 +18,7 @@
     <record id="group_hr" model="res.groups">
         <field name="name">HR</field>
         <field name="privilege_id" ref="privilege_manpower"/>
+        <field name="implied_ids" eval="[(4, ref('project.group_project_user'))]"/>
     </record>
 
     <record id="group_ceo" model="res.groups">
@@ -25,7 +26,7 @@
         <field name="privilege_id" ref="privilege_manpower"/>
     </record>
 
-    <!-- Record rules -->
+    <!-- Record rules for Manpower Requirement -->
     <record id="rule_requirement_dept_head" model="ir.rule">
         <field name="name">Requirement: Department Head sees own</field>
         <field name="model_id" ref="model_manpower_requirement"/>
@@ -45,5 +46,24 @@
         <field name="model_id" ref="model_manpower_requirement"/>
         <field name="groups" eval="[(4, ref('group_ceo'))]"/>
         <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- Global record rules: Project Users / HR only see assigned projects & tasks -->
+    <record id="rule_project_task_hr_assigned_only" model="ir.rule">
+        <field name="name">Task: Only see assigned tasks</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            [(1, '=', 1)] if (user.has_group('project.group_project_manager') or user.has_group('base.group_system')) else ['|', ('user_ids', 'in', [user.id]), ('create_uid', '=', user.id)]
+        </field>
+    </record>
+
+    <record id="rule_project_project_hr_assigned_only" model="ir.rule">
+        <field name="name">Project: Only see assigned projects</field>
+        <field name="model_id" ref="project.model_project_project"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">
+            [(1, '=', 1)] if (user.has_group('project.group_project_manager') or user.has_group('base.group_system')) else ['|', '|', ('task_user_ids', 'in', [user.id]), ('user_id', '=', user.id), ('create_uid', '=', user.id)]
+        </field>
     </record>
 </odoo>

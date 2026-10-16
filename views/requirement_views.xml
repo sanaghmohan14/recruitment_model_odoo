@@ -6,9 +6,11 @@
         <field name="arch" type="xml">
             <form string="Manpower Requirement">
                 <header>
+                    <field name="is_ceo" invisible="1"/>
+                    <field name="is_hr" invisible="1"/>
                     <button name="action_submit" string="Submit to HR" type="object" class="btn-primary"
                             invisible="state != 'draft'"
-                            groups="manpower_requisition.group_dept_head"/>
+                            groups="manpower_requisition.group_dept_head,manpower_requisition.group_hr"/>
                     <button name="action_send_for_approval" string="Send to CEO" type="object" class="btn-primary"
                             invisible="state != 'hr_review'"
                             groups="manpower_requisition.group_hr"/>
@@ -19,7 +21,7 @@
                             invisible="state not in ('hr_review', 'pending_approval')"
                             groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
                     <button name="action_create_opening" string="Create Job Opening" type="object" class="btn-primary"
-                            invisible="state != 'approved'"
+                            invisible="state != 'approved' or is_ceo or not is_hr"
                             groups="manpower_requisition.group_hr"/>
                     <button name="action_reset_draft" string="Reset to Draft" type="object"
                             invisible="state not in ('hr_review', 'rejected')"
@@ -38,16 +40,16 @@
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
-                        <group string="Client Call">
-                            <field name="client_id" readonly="state not in ('draft', 'hr_review')"/>
-                            <field name="client_contact" readonly="state not in ('draft', 'hr_review')"/>
-                            <field name="call_date" readonly="state not in ('draft', 'hr_review')"/>
+                        <group string="Project &amp; Task">
+                            <field name="project_id" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="task_id" readonly="state not in ('draft', 'hr_review')"
+                                   domain="[('project_id', '=', project_id)] if project_id else []"/>
+                            <field name="client_id" string="Client" readonly="state not in ('draft', 'hr_review')"/>
                         </group>
-                        <group string="Request">
+                        <group string="Request Details">
                             <field name="request_type"/>
                             <field name="requested_by_id"/>
                             <field name="department_id"
-                                   invisible="request_type == 'hiring'"
                                    readonly="state not in ('draft', 'hr_review')"/>
                             <field name="company_id" invisible="1"/>
                         </group>
@@ -70,8 +72,6 @@
                                     <field name="reason_note" readonly="state not in ('draft', 'hr_review')"/>
                                 </group>
                             </group>
-                            <field name="call_notes" placeholder="Notes from the client's phone call..."
-                                   readonly="state not in ('draft', 'hr_review')"/>
                         </page>
                         <page string="HR Review" name="hr_review">
                             <group>
@@ -114,6 +114,8 @@
                   decoration-info="state == 'pending_approval'">
                 <field name="name"/>
                 <field name="request_type" optional="show"/>
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="department_id" optional="hide"/>
                 <field name="job_title"/>
@@ -137,6 +139,8 @@
             <search>
                 <field name="name"/>
                 <field name="job_title"/>
+                <field name="project_id"/>
+                <field name="task_id"/>
                 <field name="client_id"/>
                 <field name="department_id"/>
                 <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
@@ -146,6 +150,7 @@
                 <filter name="f_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
                 <group>
                     <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="g_project" string="Project" context="{'group_by': 'project_id'}"/>
                     <filter name="g_client" string="Client" context="{'group_by': 'client_id'}"/>
                     <filter name="g_dept" string="Department" context="{'group_by': 'department_id'}"/>
                 </group>
@@ -159,7 +164,7 @@
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Register a new manpower requirement</p>
-            <p>Record the client's request, then submit it to HR for review.</p>
+            <p>Record a requirement from project/task or internal requirement, then submit it to HR for review.</p>
         </field>
     </record>
 </odoo>

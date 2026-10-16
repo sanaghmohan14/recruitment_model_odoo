@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form_inherit_manpower" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.manpower</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <!-- Header buttons -->
+            <xpath expr="//header" position="inside">
+                <button name="action_submit_hiring" string="Submit Hiring" type="object" class="btn-primary"
+                        invisible="not hiring_required or hiring_submitted"/>
+                <button name="action_create_hiring_request" string="Create Hiring Request" type="object" class="btn-primary"
+                        invisible="not hiring_required or not hiring_submitted"
+                        groups="manpower_requisition.group_hr,project.group_project_manager,base.group_system"/>
+            </xpath>
+
+            <!-- Stat button in button_box -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_hiring_requests" type="object" class="oe_stat_button"
+                        icon="fa-users" invisible="requirement_count == 0 and not hiring_required">
+                    <field name="requirement_count" widget="statinfo" string="Hiring Requests"/>
+                </button>
+            </xpath>
+
+            <!-- Hiring Required and Client on task form -->
+            <xpath expr="//field[@name='user_ids']" position="after">
+                <field name="client_id"/>
+                <field name="hiring_required" widget="boolean_toggle"/>
+                <field name="hiring_submitted" invisible="not hiring_required" readonly="1"/>
+            </xpath>
+
+            <!-- Notebook page for Hiring Request details -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Hiring Request" name="hiring_requisition" invisible="not hiring_required">
+                    <group>
+                        <field name="client_id"/>
+                        <field name="hiring_required"/>
+                        <field name="hiring_submitted" readonly="1"/>
+                    </group>
+                    <field name="requirement_ids" readonly="1">
+                        <list string="Manpower Requirements">
+                            <field name="name"/>
+                            <field name="job_title"/>
+                            <field name="vacancies"/>
+                            <field name="requested_by_id"/>
+                            <field name="state" widget="badge"
+                                   decoration-success="state == 'approved'"
+                                   decoration-danger="state == 'rejected'"
+                                   decoration-warning="state == 'hr_review'"
+                                   decoration-info="state == 'pending_approval'"
+                                   decoration-muted="state == 'draft'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Task search view filter -->
+    <record id="view_task_search_inherit_manpower" model="ir.ui.view">
+        <field name="name">project.task.search.inherit.manpower</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_tasks']" position="before">
+                <filter name="filter_assigned_tasks" string="Assigned to Me" domain="[('user_ids', 'in', [uid])]"/>
+                <filter name="filter_hiring_required" string="Hiring Required" domain="[('hiring_required', '=', True)]"/>
+                <filter name="filter_hiring_submitted" string="Hiring Submitted" domain="[('hiring_submitted', '=', True)]"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Project search view filter: Assigned Projects -->
+    <record id="view_project_project_filter_inherit_manpower" model="ir.ui.view">
+        <field name="name">project.project.select.inherit.manpower</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='own_projects']" position="after">
+                <filter name="filter_assigned_to_me" string="Assigned to Me (Project or Tasks)"
+                        domain="['|', ('user_id', '=', uid), ('task_user_ids', 'in', [uid])]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

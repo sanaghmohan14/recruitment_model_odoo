@@ -21,19 +21,28 @@ class ManpowerRequirement(models.Model):
         ('rejected', 'Rejected'),
     ], default='draft', tracking=True, copy=False, required=True)
     request_type = fields.Selection([
-        ('client', 'Client Requirement'),
         ('hiring', 'Hiring Request'),
-    ], string='Request Type', default='client', required=True, tracking=True,
+        ('client', 'Project Requirement'),
+        ('internal', 'Internal Requirement'),
+    ], string='Request Type', default='hiring', required=True, tracking=True,
        copy=False)
 
-    # Client call details (we act as a mediator for the client)
-    client_id = fields.Many2one('res.partner', string='Client', tracking=True)
-    client_contact = fields.Char(string='Contact Person')
-    call_date = fields.Date(string='Call Date', default=fields.Date.context_today)
-    call_notes = fields.Text(string='Call Notes')
+    # Project and Task details
+    project_id = fields.Many2one('project.project', string='Project', tracking=True)
+    task_id = fields.Many2one(
+        'project.task', string='Job Role',
+        domain="[('project_id', '=', project_id)] if project_id else []",
+        tracking=True)
+    client_id = fields.Many2one(
+        'res.partner', string='Client', tracking=True)
+    partner_id = fields.Many2one(
+        'res.partner', string='Customer',
+        related='client_id', store=True, readonly=True)
 
     # Requirement details
-    department_id = fields.Many2one('hr.department', string='Department', tracking=True)
+    department_id = fields.Many2one(
+        'hr.department', string='Department', tracking=True,
+        default=lambda self: self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1).department_id.id or False)
     job_title = fields.Char(string='Position', required=True, tracking=True)
     vacancies = fields.Integer(string='Number of Vacancies', default=1, tracking=True)
     qualification = fields.Char(string='Qualification')
@@ -81,10 +90,38 @@ class ManpowerRequirement(models.Model):
     opening_count = fields.Integer(compute='_compute_opening_count')
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
 
+    is_ceo = fields.Boolean(compute='_compute_user_role')
+    is_hr = fields.Boolean(compute='_compute_user_role')
+
+    @api.depends_context('uid')
+    def _compute_user_role(self):
+        is_ceo = self.env.user.has_group(GROUP_CEO)
+        is_hr = self.env.user.has_group(GROUP_HR) and not is_ceo
+        for req in self:
+            req.is_ceo = is_ceo
+            req.is_hr = is_hr
+
     @api.depends('opening_ids')
     def _compute_opening_count(self):
         for rec in self:
             rec.opening_count = len(rec.opening_ids)
+
+    @api.onchange('task_id')
+    def _onchange_task_id(self):
+        if self.task_id:
+            if self.task_id.project_id and not self.project_id:
+                self.project_id = self.task_id.project_id
+            if not self.job_title:
+                self.job_title = self.task_id.name
+            if self.task_id.client_id:
+                self.client_id = self.task_id.client_id
+            elif self.task_id.partner_id:
+                self.client_id = self.task_id.partner_id
+
+    @api.onchange('project_id')
+    def _onchange_project_id(self):
+        if self.project_id and self.project_id.partner_id and not self.client_id:
+            self.client_id = self.project_id.partner_id
 
     @api.constrains('vacancies', 'experience_min', 'experience_max', 'salary_min', 'salary_max')
     def _check_values(self):
@@ -104,6 +141,8 @@ class ManpowerRequirement(models.Model):
         for vals in vals_list:
             if not vals.get('name') or vals['name'] == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('manpower.requirement') or 'New'
+            if vals.get('state') == 'hr_review' and not vals.get('submitted_date'):
+                vals['submitted_date'] = fields.Datetime.now()
         return super().create(vals_list)
 
     def write(self, vals):
@@ -145,13 +184,14 @@ class ManpowerRequirement(models.Model):
     # Workflow
 
     def action_submit(self):
-        """Department head -> HR."""
-        self._check_group(GROUP_DEPT_HEAD)
+        """Department head or HR -> HR."""
+        if not self.env.su and not (self.env.user.has_group(GROUP_DEPT_HEAD) or self.env.user.has_group(GROUP_HR)):
+            raise AccessError(_('You are not allowed to perform this action.'))
         for rec in self:
             if rec.state != 'draft':
                 raise UserError(_('Only draft requirements can be submitted.'))
-            if not rec.department_id:
-                raise UserError(_('Please select a department before submitting.'))
+            if not rec.department_id and not rec.project_id:
+                raise UserError(_('Please select a department or project before submitting.'))
         self.write({'state': 'hr_review', 'submitted_date': fields.Datetime.now()})
         self._notify_group(GROUP_HR, _('A new manpower requirement is waiting for HR review.'))
 
@@ -205,6 +245,8 @@ class ManpowerRequirement(models.Model):
     def action_create_opening(self):
         """HR creates a job opening from an approved requirement."""
         self._check_group(GROUP_HR)
+        if self.env.user.has_group(GROUP_CEO) and not self.env.su:
+            raise AccessError(_('Only HR users can create a job opening.'))
         self.ensure_one()
         if self.state != 'approved':
             raise UserError(_('A job opening can only be created from an approved requirement.'))
@@ -213,7 +255,7 @@ class ManpowerRequirement(models.Model):
             # Copy the approved requirement so the opening is fully populated as
             # soon as its form is displayed.
             'title': self.job_title,
-            'department_id': self.department_id.id,
+            'department_id': self.department_id.id if self.department_id else False,
             'vacancies': self.vacancies,
             'location': self.location,
             'qualification': self.qualification,

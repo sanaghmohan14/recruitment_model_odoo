@@ -9,12 +9,13 @@ Standalone manpower requisition module (independent of hr_recruitment).
 Workflow: Dept Head registers the client's requirement -> HR reviews experience/salary
 -> CEO approves -> HR creates and publishes a Job Opening.
     """,
-    'depends': ['base', 'mail', 'hr', 'website'],
+    'depends': ['base', 'mail', 'hr', 'website', 'project'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/channel_data.xml',
+        'views/project_task_views.xml',
         'views/requirement_views.xml',
         'views/job_opening_views.xml',
         'views/application_views.xml',

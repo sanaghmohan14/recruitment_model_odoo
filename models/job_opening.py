@@ -39,7 +39,9 @@ class ManpowerJobOpening(models.Model):
                         store=True, readonly=False, required=True, tracking=True)
     department_id = fields.Many2one('hr.department', compute='_compute_from_requirement',
                                     store=True, readonly=False)
-    client_id = fields.Many2one('res.partner', related='requirement_id.client_id', store=True)
+    project_id = fields.Many2one('project.project', related='requirement_id.project_id', store=True, string='Project')
+    task_id = fields.Many2one('project.task', related='requirement_id.task_id', store=True, string='Job Role')
+    client_id = fields.Many2one('res.partner', related='requirement_id.client_id', store=True, string='Client / Partner')
     vacancies = fields.Integer(compute='_compute_from_requirement', store=True, readonly=False)
     location = fields.Char(compute='_compute_from_requirement', store=True, readonly=False)
     qualification = fields.Char(compute='_compute_from_requirement', store=True, readonly=False)
