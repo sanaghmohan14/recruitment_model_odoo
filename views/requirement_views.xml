@@ -8,26 +8,27 @@
                 <header>
                     <field name="is_ceo" invisible="1"/>
                     <field name="is_hr" invisible="1"/>
-                    <button name="action_submit" string="Submit to HR" type="object" class="btn-primary"
-                            invisible="state != 'draft'"
-                            groups="manpower_requisition.group_dept_head,manpower_requisition.group_hr"/>
+                    <field name="is_pm" invisible="1"/>
                     <button name="action_send_for_approval" string="Send to CEO" type="object" class="btn-primary"
-                            invisible="state != 'hr_review'"
-                            groups="manpower_requisition.group_hr"/>
+                            invisible="state not in ('draft', 'pm_review')"
+                            groups="manpower_requisition.group_project_manager"/>
                     <button name="action_approve" string="Approve" type="object" class="btn-primary"
                             invisible="state != 'pending_approval'"
                             groups="manpower_requisition.group_ceo"/>
                     <button name="action_reject" string="Reject" type="object"
-                            invisible="state not in ('hr_review', 'pending_approval')"
-                            groups="manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
+                            invisible="state not in ('draft', 'pm_review', 'pending_approval')"
+                            groups="manpower_requisition.group_project_manager,manpower_requisition.group_ceo"/>
                     <button name="action_create_opening" string="Create Job Opening" type="object" class="btn-primary"
-                            invisible="state != 'approved' or is_ceo or not is_hr"
+                            invisible="state != 'approved' or not is_hr"
                             groups="manpower_requisition.group_hr"/>
                     <button name="action_reset_draft" string="Reset to Draft" type="object"
-                            invisible="state not in ('hr_review', 'rejected')"
-                            groups="manpower_requisition.group_hr"/>
+                            invisible="state not in ('pm_review', 'rejected')"
+                            groups="manpower_requisition.group_project_manager"/>
+                    <button name="action_open_client_update_wizard" string="Send Update to Client" type="object" class="btn-secondary"
+                            invisible="state not in ('draft', 'pm_review', 'pending_approval', 'approved')"
+                            groups="manpower_requisition.group_project_manager,manpower_requisition.group_hr,manpower_requisition.group_ceo"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,hr_review,pending_approval,approved"/>
+                           statusbar_visible="draft,pending_approval,approved"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -40,17 +41,17 @@
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
-                        <group string="Project &amp; Task">
-                            <field name="project_id" readonly="state not in ('draft', 'hr_review')"/>
-                            <field name="task_id" readonly="state not in ('draft', 'hr_review')"
+                        <group>
+                            <field name="project_id" invisible="1"/>
+                            <field name="task_id" readonly="state not in ('draft', 'pm_review', 'hr_review')"
                                    domain="[('project_id', '=', project_id)] if project_id else []"/>
-                            <field name="client_id" string="Client" readonly="state not in ('draft', 'hr_review')"/>
+                            <field name="client_id" string="Client" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                         </group>
                         <group string="Request Details">
                             <field name="request_type"/>
                             <field name="requested_by_id"/>
                             <field name="department_id"
-                                   readonly="state not in ('draft', 'hr_review')"/>
+                                   readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                             <field name="company_id" invisible="1"/>
                         </group>
                     </group>
@@ -58,42 +59,46 @@
                         <page string="Requirement" name="requirement">
                             <group>
                                 <group string="Position">
-                                    <field name="job_title" readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="vacancies" readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="qualification" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="job_title" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="vacancies" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="qualification" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                                     <field name="skill_ids" widget="many2many_tags"
-                                           readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="location" readonly="state not in ('draft', 'hr_review')"/>
+                                           readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="location" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                                 </group>
                                 <group string="Joining">
-                                    <field name="joining_requirement" readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="joining_date" readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="reason" readonly="state not in ('draft', 'hr_review')"/>
-                                    <field name="reason_note" readonly="state not in ('draft', 'hr_review')"/>
+                                    <field name="joining_requirement" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="joining_date" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="reason" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="reason_note" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                                 </group>
                             </group>
                         </page>
-                        <page string="HR Review" name="hr_review">
+                        <page string="Review &amp; Budget" name="review_budget">
                             <group>
                                 <group string="Experience">
-                                    <field name="experience_min" readonly="state != 'hr_review'"/>
-                                    <field name="experience_max" readonly="state != 'hr_review'"/>
+                                    <field name="experience_min" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="experience_max" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                                 </group>
                                 <group string="Salary">
                                     <field name="currency_id" invisible="1"/>
-                                    <field name="salary_min" readonly="state != 'hr_review'"/>
-                                    <field name="salary_max" readonly="state != 'hr_review'"/>
+                                    <field name="salary_min" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                    <field name="salary_max" readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
                                 </group>
                             </group>
-                            <field name="hr_notes" placeholder="HR notes..." readonly="state != 'hr_review'"/>
+                            <group string="Notes">
+                                <field name="pm_notes" placeholder="Project Manager notes..." readonly="state not in ('draft', 'pm_review', 'hr_review')"/>
+                                <field name="hr_notes" placeholder="HR notes..." readonly="state not in ('draft', 'pm_review', 'hr_review', 'approved')"/>
+                            </group>
                         </page>
                         <page string="Approval" name="approval">
                             <group>
                                 <group>
                                     <field name="submitted_date"/>
-                                    <field name="hr_reviewed_by_id"/>
+                                    <field name="pm_reviewed_by_id"/>
                                     <field name="approved_by_id"/>
                                     <field name="approved_date"/>
+                                    <field name="hr_reviewed_by_id"/>
                                 </group>
                             </group>
                         </page>
@@ -114,7 +119,7 @@
                   decoration-info="state == 'pending_approval'">
                 <field name="name"/>
                 <field name="request_type" optional="show"/>
-                <field name="project_id" optional="show"/>
+                <field name="project_id" optional="hide"/>
                 <field name="task_id" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="department_id" optional="hide"/>
@@ -125,7 +130,7 @@
                 <field name="state" widget="badge"
                        decoration-success="state == 'approved'"
                        decoration-danger="state == 'rejected'"
-                       decoration-warning="state == 'hr_review'"
+                       decoration-warning="state in ('pm_review', 'hr_review')"
                        decoration-info="state == 'pending_approval'"
                        decoration-muted="state == 'draft'"/>
             </list>
@@ -143,10 +148,9 @@
                 <field name="task_id"/>
                 <field name="client_id"/>
                 <field name="department_id"/>
-                <filter name="f_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
-                <filter name="f_hr" string="HR Review" domain="[('state', '=', 'hr_review')]"/>
+                <filter name="f_draft" string="Draft" domain="[('state', 'in', ('draft', 'pm_review'))]"/>
                 <filter name="f_pending" string="Pending Approval" domain="[('state', '=', 'pending_approval')]"/>
-                <filter name="f_approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="f_approved" string="Approved (Goes to HR)" domain="[('state', '=', 'approved')]"/>
                 <filter name="f_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
                 <group>
                     <filter name="g_state" string="Status" context="{'group_by': 'state'}"/>
@@ -163,8 +167,8 @@
         <field name="res_model">manpower.requirement</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Register a new manpower requirement</p>
-            <p>Record a requirement from project/task or internal requirement, then submit it to HR for review.</p>
+            <p class="o_view_nocontent_smiling_face">Create a new manpower requirement</p>
+            <p>Project Managers create requirements from job role tasks and submit to CEO for approval.</p>
         </field>
     </record>
 </odoo>

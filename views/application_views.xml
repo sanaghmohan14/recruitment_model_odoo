@@ -44,6 +44,7 @@
                 <field name="name"/>
                 <field name="applicant_name"/>
                 <field name="job_opening_id"/>
+                <field name="client_id" optional="show"/>
                 <field name="mobile" optional="show"/>
                 <field name="email" optional="show"/>
                 <field name="total_experience" optional="show"/>
@@ -87,8 +88,11 @@
                     <button name="action_open_stage_email_wizard" string="Send Offer Letter" type="object"
                             invisible="stage != 'contract_signed'"
                             groups="manpower_requisition.group_hr"/>
+                    <button name="action_open_client_update_wizard" string="Send Update to Client" type="object" class="btn-secondary"
+                            invisible="stage == 'cancelled'"
+                            groups="manpower_requisition.group_hr,manpower_requisition.group_project_manager,manpower_requisition.group_ceo"/>
                     <field name="stage" widget="statusbar" clickable="1" options="{'clickable': True}"
-                           statusbar_visible="new,qualification,first_interview,second_interview,contract_proposal,contract_signed,cancelled"/>
+                           statusbar_visible="new,qualification,first_interview,second_interview,third_interview,contract_proposal,contract_signed,cancelled"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -102,8 +106,9 @@
                     <group>
                         <group string="Application Details">
                             <field name="job_opening_id"/>
+                            <field name="client_id"/>
                             <field name="email" widget="email"/>
-                            <field name="phone" widget="phone"/>
+<!--                            <field name="phone" widget="phone"/>-->
                             <field name="mobile" widget="phone"/>
                             <field name="candidate_interest" readonly="1"/>
                         </group>
@@ -114,6 +119,18 @@
                         </group>
                     </group>
                     <field name="address" placeholder="Address..."/>
+                    <group string="Interview Scores" invisible="stage in ('new', 'qualification')">
+                        <group>
+                            <field name="first_interview_score" widget="priority"
+                                   options="{'clickable': True}"/>
+                            <field name="second_interview_score" widget="priority"
+                                   invisible="stage in ('new', 'qualification', 'first_interview')"
+                                   options="{'clickable': True}"/>
+                            <field name="third_interview_score" widget="priority"
+                                   invisible="stage in ('new', 'qualification', 'first_interview', 'second_interview')"
+                                   options="{'clickable': True}"/>
+                        </group>
+                    </group>
                     <notebook>
                         <page string="Salary Details">
                             <group>
@@ -179,8 +196,10 @@
                 <field name="name"/>
                 <field name="applicant_name"/>
                 <field name="job_opening_id"/>
+                <field name="client_id"/>
                 <field name="email"/>
                 <group>
+                    <filter name="group_by_client" string="Client" context="{'group_by': 'client_id'}"/>
                     <filter name="group_by_position" string="Job Position" context="{'group_by': 'job_opening_id'}"/>
                     <filter name="group_by_stage" string="Stage" context="{'group_by': 'stage'}"/>
                 </group>

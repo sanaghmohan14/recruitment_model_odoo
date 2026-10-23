@@ -2,12 +2,12 @@
     'name': 'Client Manpower Requisition & Job Openings',
     'version': '19.0.1.0.0',
     'category': 'Human Resources',
-    'summary': 'Client manpower requirements with Dept Head -> HR -> CEO approval and job openings',
+    'author': 'Custom',
+    'summary': 'Client manpower requirements with Dept Head -> Project Manager -> CEO approval -> HR',
     'description': """
 Standalone manpower requisition module (independent of hr_recruitment).
 
-Workflow: Dept Head registers the client's requirement -> HR reviews experience/salary
--> CEO approves -> HR creates and publishes a Job Opening.
+Workflow: Dept Head creates hiring request -> Project Manager reviews -> CEO approves -> HR creates and publishes Job Opening.
     """,
     'depends': ['base', 'mail', 'hr', 'website', 'project'],
     'data': [
@@ -22,6 +22,8 @@ Workflow: Dept Head registers the client's requirement -> HR reviews experience/
         'views/application_email_wizard_views.xml',
         'views/application_reject_wizard_views.xml',
         'views/requirement_reject_wizard_views.xml',
+        'views/requirement_client_wizard_views.xml',
+        'views/application_client_wizard_views.xml',
         'views/menus.xml',
         'views/website_job_opening_templates.xml',
     ],

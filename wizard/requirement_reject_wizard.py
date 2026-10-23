@@ -19,8 +19,9 @@ class ManpowerRequirementRejectWizard(models.TransientModel):
         requirement = self.requirement_id.exists()
         if not requirement:
             raise UserError(_('The manpower requirement no longer exists.'))
-        if requirement.state == 'hr_review':
-            requirement._check_group(GROUP_HR)
+        if requirement.state in ('draft', 'pm_review'):
+            if not self.env.su and not self.env.user.has_group('manpower_requisition.group_project_manager'):
+                raise UserError(_('Only a Project Manager can reject the requirement.'))
         elif requirement.state == 'pending_approval':
             requirement._check_group(GROUP_CEO)
         else:

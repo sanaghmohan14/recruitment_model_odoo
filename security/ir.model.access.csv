@@ -1,6 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_requirement_dept_head,manpower.requirement dept head,model_manpower_requirement,group_dept_head,1,1,1,0
-access_requirement_hr,manpower.requirement hr,model_manpower_requirement,group_hr,1,1,1,1
+access_requirement_dept_head,manpower.requirement dept head,model_manpower_requirement,group_dept_head,0,0,0,0
+access_requirement_hr,manpower.requirement hr,model_manpower_requirement,group_hr,1,1,0,0
 access_requirement_ceo,manpower.requirement ceo,model_manpower_requirement,group_ceo,1,1,0,0
 access_opening_dept_head,manpower.job.opening dept head,model_manpower_job_opening,group_dept_head,1,0,0,0
 access_opening_hr,manpower.job.opening hr,model_manpower_job_opening,group_hr,1,1,1,1
@@ -18,3 +18,16 @@ access_application_email_wizard_hr,manpower.application.email.wizard hr,model_ma
 access_application_reject_wizard_hr,manpower.application.reject.wizard hr,model_manpower_application_reject_wizard,group_hr,1,1,1,1
 access_requirement_reject_wizard_hr,manpower.requirement.reject.wizard hr,model_manpower_requirement_reject_wizard,group_hr,1,1,1,1
 access_requirement_reject_wizard_ceo,manpower.requirement.reject.wizard ceo,model_manpower_requirement_reject_wizard,group_ceo,1,1,1,1
+access_requirement_project_manager,manpower.requirement project manager,model_manpower_requirement,group_project_manager,1,1,1,1
+access_opening_project_manager,manpower.job.opening project manager,model_manpower_job_opening,group_project_manager,1,0,0,0
+access_channel_project_manager,manpower.posting.channel project manager,model_manpower_posting_channel,group_project_manager,1,0,0,0
+access_skill_project_manager,manpower.skill project manager,model_manpower_skill,group_project_manager,1,1,1,1
+access_application_project_manager,manpower.application project manager,model_manpower_application,group_project_manager,1,0,0,0
+access_requirement_reject_wizard_pm,manpower.requirement.reject.wizard pm,model_manpower_requirement_reject_wizard,group_project_manager,1,1,1,1
+access_requirement_client_wizard_dept_head,manpower.requirement.client.wizard dept head,model_manpower_requirement_client_wizard,group_dept_head,0,0,0,0
+access_requirement_client_wizard_pm,manpower.requirement.client.wizard pm,model_manpower_requirement_client_wizard,group_project_manager,1,1,1,1
+access_requirement_client_wizard_hr,manpower.requirement.client.wizard hr,model_manpower_requirement_client_wizard,group_hr,1,1,1,1
+access_requirement_client_wizard_ceo,manpower.requirement.client.wizard ceo,model_manpower_requirement_client_wizard,group_ceo,1,1,1,1
+access_application_client_wizard_pm,manpower.application.client.wizard pm,model_manpower_application_client_wizard,group_project_manager,1,1,1,1
+access_application_client_wizard_hr,manpower.application.client.wizard hr,model_manpower_application_client_wizard,group_hr,1,1,1,1
+access_application_client_wizard_ceo,manpower.application.client.wizard ceo,model_manpower_application_client_wizard,group_ceo,1,1,1,1

@@ -1,57 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Task form: Create Hiring Request button in header & stat button (shown when project has hiring enabled) -->
     <record id="view_task_form_inherit_manpower" model="ir.ui.view">
         <field name="name">project.task.form.inherit.manpower</field>
         <field name="model">project.task</field>
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
-            <!-- Header buttons -->
             <xpath expr="//header" position="inside">
-                <button name="action_submit_hiring" string="Submit Hiring" type="object" class="btn-primary"
-                        invisible="not hiring_required or hiring_submitted"/>
-                <button name="action_create_hiring_request" string="Create Hiring Request" type="object" class="btn-primary"
-                        invisible="not hiring_required or not hiring_submitted"
-                        groups="manpower_requisition.group_hr,project.group_project_manager,base.group_system"/>
+                <field name="hiring_required" invisible="1"/>
+                <field name="project_hiring_required" invisible="1"/>
+                <button name="action_create_hiring_request" string="Create Hiring Request"
+                        type="object" class="btn-primary"
+                        invisible="not hiring_required and not project_hiring_required"
+                        groups="manpower_requisition.group_project_manager"/>
             </xpath>
-
-            <!-- Stat button in button_box -->
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_view_hiring_requests" type="object" class="oe_stat_button"
-                        icon="fa-users" invisible="requirement_count == 0 and not hiring_required">
+                        icon="fa-users" invisible="not hiring_required and not project_hiring_required and requirement_count == 0"
+                        groups="manpower_requisition.group_project_manager,manpower_requisition.group_hr,manpower_requisition.group_ceo">
                     <field name="requirement_count" widget="statinfo" string="Hiring Requests"/>
                 </button>
             </xpath>
-
-            <!-- Hiring Required and Client on task form -->
             <xpath expr="//field[@name='user_ids']" position="after">
                 <field name="client_id"/>
-                <field name="hiring_required" widget="boolean_toggle"/>
-                <field name="hiring_submitted" invisible="not hiring_required" readonly="1"/>
-            </xpath>
-
-            <!-- Notebook page for Hiring Request details -->
-            <xpath expr="//notebook" position="inside">
-                <page string="Hiring Request" name="hiring_requisition" invisible="not hiring_required">
-                    <group>
-                        <field name="client_id"/>
-                        <field name="hiring_required"/>
-                        <field name="hiring_submitted" readonly="1"/>
-                    </group>
-                    <field name="requirement_ids" readonly="1">
-                        <list string="Manpower Requirements">
-                            <field name="name"/>
-                            <field name="job_title"/>
-                            <field name="vacancies"/>
-                            <field name="requested_by_id"/>
-                            <field name="state" widget="badge"
-                                   decoration-success="state == 'approved'"
-                                   decoration-danger="state == 'rejected'"
-                                   decoration-warning="state == 'hr_review'"
-                                   decoration-info="state == 'pending_approval'"
-                                   decoration-muted="state == 'draft'"/>
-                        </list>
-                    </field>
-                </page>
             </xpath>
         </field>
     </record>
@@ -65,7 +36,6 @@
             <xpath expr="//filter[@name='my_tasks']" position="before">
                 <filter name="filter_assigned_tasks" string="Assigned to Me" domain="[('user_ids', 'in', [uid])]"/>
                 <filter name="filter_hiring_required" string="Hiring Required" domain="[('hiring_required', '=', True)]"/>
-                <filter name="filter_hiring_submitted" string="Hiring Submitted" domain="[('hiring_submitted', '=', True)]"/>
                 <separator/>
             </xpath>
         </field>
@@ -80,6 +50,54 @@
             <xpath expr="//filter[@name='own_projects']" position="after">
                 <filter name="filter_assigned_to_me" string="Assigned to Me (Project or Tasks)"
                         domain="['|', ('user_id', '=', uid), ('task_user_ids', 'in', [uid])]"/>
+                <filter name="filter_hiring_required" string="Hiring Projects"
+                        domain="[('hiring_required', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Project Form: Manually enable Hiring Required & Smart Button for Requests -->
+    <record id="view_project_project_form_inherit_manpower" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.manpower</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_hiring_requests" type="object" class="oe_stat_button"
+                        icon="fa-users" invisible="not hiring_required and requirement_count == 0">
+                    <field name="requirement_count" widget="statinfo" string="Hiring Requests"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="after">
+                <group name="manpower_settings">
+                    <field name="hiring_required" widget="boolean_toggle" string="Hiring Required"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Project Kanban View: ONLY Hiring Required Toggle on Project Card -->
+    <record id="view_project_kanban_inherit_manpower" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit.manpower</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="inside">
+                <field name="hiring_required"/>
+            </xpath>
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <field name="hiring_required" invisible="1"/>
+                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                    <span class="small text-muted fw-semibold">Hiring Required</span>
+                    <button name="action_toggle_hiring_required" type="object"
+                            class="btn btn-sm p-0 border-0"
+                            title="Toggle Hiring Required">
+                        <i t-if="record.hiring_required and record.hiring_required.raw_value"
+                           class="fa fa-toggle-on fa-2x text-primary"/>
+                        <i t-else=""
+                           class="fa fa-toggle-off fa-2x text-muted"/>
+                    </button>
+                </div>
             </xpath>
         </field>
     </record>

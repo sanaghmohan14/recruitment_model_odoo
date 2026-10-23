@@ -62,9 +62,20 @@ class ManpowerJobOpening(models.Model):
     # Posting
     channel_ids = fields.Many2many('manpower.posting.channel', string='Posting Channels')
     posting_date = fields.Date(readonly=True, copy=False)
-    closing_date = fields.Date()
+    closing_date = fields.Date(string='Application Closing Date', tracking=True)
+    is_expired = fields.Boolean(
+        string='Is Expired',
+        compute='_compute_is_expired',
+        help='Whether application closing date has passed.'
+    )
     published_by_id = fields.Many2one('res.users', readonly=True, copy=False)
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
+
+    @api.depends('closing_date')
+    def _compute_is_expired(self):
+        today = fields.Date.context_today(self)
+        for rec in self:
+            rec.is_expired = bool(rec.closing_date and rec.closing_date < today)
 
     def _get_website_url(self):
         self.ensure_one()

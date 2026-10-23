@@ -7,13 +7,22 @@ from odoo.exceptions import UserError
 APPLICATION_STAGES = [
     ('new', 'New'),
     ('qualification', 'Qualification'),
-    ('first_interview', 'First Interview'),
-    ('second_interview', 'Second Interview'),
+    ('first_interview', 'Internal Interview'),
+    ('second_interview', 'Manager Interview'),
+    ('third_interview', 'Client Interview'),
     ('contract_proposal', 'Contract Proposal'),
     ('contract_signed', 'Contract Signed'),
     ('cancelled', 'Cancelled'),
 ]
 APPLICATION_STAGE_SEQUENCE = [stage[0] for stage in APPLICATION_STAGES]
+INTERVIEW_SCORE_SELECTION = [
+    ('0', 'Not Rated'),
+    ('1', '1 Star'),
+    ('2', '2 Stars'),
+    ('3', '3 Stars'),
+    ('4', '4 Stars'),
+    ('5', '5 Stars'),
+]
 
 
 class ManpowerApplication(models.Model):
@@ -30,6 +39,9 @@ class ManpowerApplication(models.Model):
     job_opening_id = fields.Many2one(
         'manpower.job.opening', string='Job Position', required=True,
         ondelete='restrict', tracking=True)
+    client_id = fields.Many2one(
+        'res.partner', string='Client', related='job_opening_id.client_id',
+        store=True, readonly=True)
     stage = fields.Selection(
         APPLICATION_STAGES, string='Stage', default='new', required=True, tracking=True,
         group_expand='_read_group_stage')
@@ -39,6 +51,14 @@ class ManpowerApplication(models.Model):
         ('interested', 'Interested'),
     ], default='pending', readonly=True, copy=False, tracking=True)
     reject_reason = fields.Text(string='Rejection Reason', copy=False, tracking=True)
+
+    # Interview performance ratings, independently recorded at each stage.
+    first_interview_score = fields.Selection(
+        INTERVIEW_SCORE_SELECTION, string='Internal Interview Score', default='0', tracking=True)
+    second_interview_score = fields.Selection(
+        INTERVIEW_SCORE_SELECTION, string='Manager Interview Score', default='0', tracking=True)
+    third_interview_score = fields.Selection(
+        INTERVIEW_SCORE_SELECTION, string='Client Interview Score', default='0', tracking=True)
 
     # Applicant details
     email = fields.Char(string='Email')
@@ -146,6 +166,28 @@ class ManpowerApplication(models.Model):
             'view_mode': 'form',
             'target': 'new',
             'context': {'default_application_id': self.id},
+        }
+
+    def action_open_client_update_wizard(self):
+        """Open the wizard to send candidate stage update to the client."""
+        self.ensure_one()
+        client = (
+            self.client_id
+            or (self.job_opening_id and self.job_opening_id.client_id)
+            or (self.job_opening_id and self.job_opening_id.requirement_id and self.job_opening_id.requirement_id.client_id)
+        )
+        if not client:
+            raise UserError(_('No client is associated with this job opening / requirement.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Send Update to Client'),
+            'res_model': 'manpower.application.client.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_application_id': self.id,
+                'default_client_id': client.id,
+            },
         }
 
     @api.model

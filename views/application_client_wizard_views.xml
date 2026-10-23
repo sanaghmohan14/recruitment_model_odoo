@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_application_client_wizard_form" model="ir.ui.view">
+        <field name="name">manpower.application.client.wizard.form</field>
+        <field name="model">manpower.application.client.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Candidate Update to Client">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="application_id"/>
+                            <field name="client_id"/>
+                        </group>
+                        <group>
+                            <field name="stage_label"/>
+                            <field name="email_to" widget="email"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="subject"/>
+                    </group>
+                    <label for="body" string="Email Body"/>
+                    <field name="body" widget="html" options="{'style-inline': true}"/>
+                </sheet>
+                <footer>
+                    <button name="action_send_email" string="Send Email to Client" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

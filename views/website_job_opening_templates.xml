@@ -8,12 +8,70 @@
                     <div class="row mt-4">
                         <t t-foreach="jobs" t-as="job">
                             <div class="col-lg-6 mb-4">
-                                <div class="card h-100">
+                                <div class="card h-100 shadow-sm">
                                     <div class="card-body">
                                         <h3><a t-att-href="job._get_website_url()"><t t-esc="job.title"/></a></h3>
-                                        <p t-if="job.location"><i class="fa fa-map-marker me-2"/><t t-esc="job.location"/></p>
-                                        <p t-if="job.vacancies"><strong>Openings:</strong> <t t-esc="job.vacancies"/></p>
-                                        <a class="btn btn-primary" t-att-href="job._get_website_url()">View Job</a>
+
+                                        <!-- Location -->
+                                        <p t-if="job.location" class="mb-1">
+                                            <i class="fa fa-map-marker me-2 text-primary"/>
+                                            <t t-esc="job.location"/>
+                                        </p>
+
+                                        <!-- Vacancies -->
+                                        <p t-if="job.vacancies" class="mb-1">
+                                            <i class="fa fa-users me-2 text-primary"/>
+                                            <strong>Openings:</strong> <t t-esc="job.vacancies"/>
+                                        </p>
+
+                                        <!-- Experience Range -->
+                                        <p t-if="job.experience_min or job.experience_max" class="mb-1">
+                                            <i class="fa fa-briefcase me-2 text-primary"/>
+                                            <strong>Experience:</strong>
+                                            <t t-if="job.experience_min and job.experience_max">
+                                                <t t-esc="job.experience_min"/> - <t t-esc="job.experience_max"/> yrs
+                                            </t>
+                                            <t t-elif="job.experience_min">
+                                                Min <t t-esc="job.experience_min"/> yrs
+                                            </t>
+                                            <t t-elif="job.experience_max">
+                                                Up to <t t-esc="job.experience_max"/> yrs
+                                            </t>
+                                        </p>
+
+                                        <!-- Salary Range -->
+                                        <p t-if="job.salary_min or job.salary_max" class="mb-1">
+                                            <i class="fa fa-money me-2 text-primary"/>
+                                            <strong>Salary:</strong>
+                                            <t t-if="job.salary_min and job.salary_max">
+                                                <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_min)"/>
+                                                - <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_max)"/>
+                                            </t>
+                                            <t t-elif="job.salary_min">
+                                                From <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_min)"/>
+                                            </t>
+                                            <t t-elif="job.salary_max">
+                                                Up to <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_max)"/>
+                                            </t>
+                                        </p>
+
+                                        <!-- Skills -->
+                                        <div t-if="job.skill_ids" class="mb-2">
+                                            <i class="fa fa-cogs me-2 text-primary"/>
+                                            <strong>Skills:</strong>
+                                            <t t-foreach="job.skill_ids" t-as="skill">
+                                                <span class="badge bg-info text-dark ms-1"><t t-esc="skill.name"/></span>
+                                            </t>
+                                        </div>
+
+                                        <!-- Closing Date -->
+                                        <p t-if="job.closing_date" class="mb-2">
+                                            <i class="fa fa-calendar-times-o me-2 text-danger"/>
+                                            <strong>Apply Before:</strong>
+                                            <t t-esc="job.closing_date" t-options="{'widget': 'date'}"/>
+                                        </p>
+
+                                        <a class="btn btn-primary mt-2" t-att-href="job._get_website_url()">View Job &amp; Apply</a>
                                     </div>
                                 </div>
                             </div>
@@ -30,24 +88,136 @@
             <div id="wrap" class="oe_structure">
                 <section class="container py-5">
                     <div class="row">
+                        <!-- Left Column: Job Details -->
                         <div class="col-lg-7">
                             <h1 t-esc="job.title"/>
-                            <p t-if="job.location"><i class="fa fa-map-marker me-2"/><t t-esc="job.location"/></p>
-                            <p t-if="job.qualification"><strong>Qualification:</strong> <t t-esc="job.qualification"/></p>
-                            <p t-if="job.vacancies"><strong>Openings:</strong> <t t-esc="job.vacancies"/></p>
+
+                            <!-- Key Details Summary -->
+                            <div class="card bg-light mb-4">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- Location -->
+                                        <div t-if="job.location" class="col-sm-6 mb-2">
+                                            <i class="fa fa-map-marker me-2 text-primary"/>
+                                            <strong>Location:</strong><br/>
+                                            <span t-esc="job.location"/>
+                                        </div>
+
+                                        <!-- Vacancies -->
+                                        <div t-if="job.vacancies" class="col-sm-6 mb-2">
+                                            <i class="fa fa-users me-2 text-primary"/>
+                                            <strong>Openings:</strong><br/>
+                                            <span t-esc="job.vacancies"/>
+                                        </div>
+
+                                        <!-- Experience Range -->
+                                        <div t-if="job.experience_min or job.experience_max" class="col-sm-6 mb-2">
+                                            <i class="fa fa-briefcase me-2 text-primary"/>
+                                            <strong>Experience:</strong><br/>
+                                            <t t-if="job.experience_min and job.experience_max">
+                                                <span><t t-esc="job.experience_min"/> - <t t-esc="job.experience_max"/> years</span>
+                                            </t>
+                                            <t t-elif="job.experience_min">
+                                                <span>Minimum <t t-esc="job.experience_min"/> years</span>
+                                            </t>
+                                            <t t-elif="job.experience_max">
+                                                <span>Up to <t t-esc="job.experience_max"/> years</span>
+                                            </t>
+                                        </div>
+
+                                        <!-- Salary Range -->
+                                        <div t-if="job.salary_min or job.salary_max" class="col-sm-6 mb-2">
+                                            <i class="fa fa-money me-2 text-primary"/>
+                                            <strong>Salary Range:</strong><br/>
+                                            <t t-if="job.salary_min and job.salary_max">
+                                                <span>
+                                                    <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_min)"/>
+                                                    - <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_max)"/>
+                                                </span>
+                                            </t>
+                                            <t t-elif="job.salary_min">
+                                                <span>From <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_min)"/></span>
+                                            </t>
+                                            <t t-elif="job.salary_max">
+                                                <span>Up to <t t-esc="job.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(job.salary_max)"/></span>
+                                            </t>
+                                        </div>
+
+                                        <!-- Qualification -->
+                                        <div t-if="job.qualification" class="col-sm-6 mb-2">
+                                            <i class="fa fa-graduation-cap me-2 text-primary"/>
+                                            <strong>Qualification:</strong><br/>
+                                            <span t-esc="job.qualification"/>
+                                        </div>
+
+                                        <!-- Application Closing Date -->
+                                        <div t-if="job.closing_date" class="col-sm-6 mb-2">
+                                            <i class="fa fa-calendar-times-o me-2 text-danger"/>
+                                            <strong>Apply Before:</strong><br/>
+                                            <span t-esc="job.closing_date" t-options="{'widget': 'date'}"/>
+                                        </div>
+
+                                        <!-- Posting Date -->
+                                        <div t-if="job.posting_date" class="col-sm-6 mb-2">
+                                            <i class="fa fa-calendar me-2 text-primary"/>
+                                            <strong>Posted On:</strong><br/>
+                                            <span t-esc="job.posting_date" t-options="{'widget': 'date'}"/>
+                                        </div>
+
+                                        <!-- Department -->
+                                        <div t-if="job.department_id" class="col-sm-6 mb-2">
+                                            <i class="fa fa-building me-2 text-primary"/>
+                                            <strong>Department:</strong><br/>
+                                            <span t-esc="job.department_id.name"/>
+                                        </div>
+                                    </div>
+
+                                    <!-- Skills (full width row) -->
+                                    <div t-if="job.skill_ids" class="mt-2">
+                                        <i class="fa fa-cogs me-2 text-primary"/>
+                                        <strong>Skills Required:</strong>
+                                        <div class="mt-1">
+                                            <t t-foreach="job.skill_ids" t-as="skill">
+                                                <span class="badge bg-info text-dark me-1 mb-1"><t t-esc="skill.name"/></span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Job Description -->
+                            <h4>Job Description</h4>
                             <div t-field="job.description"/>
                         </div>
+
+                        <!-- Right Column: Apply Form -->
                         <div class="col-lg-5">
-                            <div class="card">
+                            <div class="card shadow-sm sticky-top" style="top: 80px;">
                                 <div class="card-body">
                                     <h3>Apply for this position</h3>
+
+                                    <!-- Closing date warning -->
+                                    <div t-if="job.closing_date" class="alert alert-info py-2 mb-3">
+                                        <i class="fa fa-clock-o me-1"/>
+                                        Applications close on <strong t-esc="job.closing_date" t-options="{'widget': 'date'}"/>
+                                    </div>
+
                                     <p class="text-danger" t-if="error" t-esc="error"/>
                                     <form t-att-action="job._get_website_url() + '/apply'" method="post">
                                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                        <div class="mb-3"><label class="form-label">Name</label><input name="applicant_name" required="required" class="form-control"/></div>
-                                        <div class="mb-3"><label class="form-label">Email</label><input name="email" type="email" required="required" class="form-control"/></div>
-                                        <div class="mb-3"><label class="form-label">Phone</label><input name="phone" class="form-control"/></div>
-                                        <button type="submit" class="btn btn-primary">Submit Application</button>
+                                        <div class="mb-3">
+                                            <label class="form-label">Name</label>
+                                            <input name="applicant_name" required="required" class="form-control"/>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input name="email" type="email" required="required" class="form-control"/>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Phone</label>
+                                            <input name="phone" class="form-control"/>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">Submit Application</button>
                                     </form>
                                 </div>
                             </div>
@@ -69,3 +239,4 @@
         </t>
     </template>
 </odoo>
+
