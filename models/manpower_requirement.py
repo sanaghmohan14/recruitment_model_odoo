@@ -32,7 +32,12 @@ class ManpowerRequirement(models.Model):
     def _default_project_id(self):
         project = self.env['project.project'].search([('hiring_required', '=', True)], limit=1)
         if not project:
-            project = self.env['project.project'].search([('name', '=ilike', 'Hiring')], limit=1)
+            project = self.env['project.project'].search([('name', '=ilike', 'Hiring%')], limit=1)
+        if not project:
+            project = self.env['project.project'].sudo().create({
+                'name': 'Hiring & Recruitment',
+                'hiring_required': True,
+            })
         return project.id if project else False
 
     # Project and Task details
@@ -51,14 +56,21 @@ class ManpowerRequirement(models.Model):
         'res.partner', string='Customer',
         related='client_id', store=True, readonly=True)
 
+    # Client contact info (from website or client requirement)
+    client_contact_name = fields.Char(string='Contact Person', tracking=True)
+    client_company_name = fields.Char(string='Company Name', tracking=True)
+    client_email = fields.Char(string='Email', tracking=True)
+    client_phone = fields.Char(string='Phone', tracking=True)
+    client_address = fields.Text(string='Address', tracking=True)
+
     # Requirement details
-    department_id = fields.Many2one(
-        'hr.department', string='Department', tracking=True)
     job_title = fields.Char(string='Position', required=True, tracking=True)
     vacancies = fields.Integer(string='Number of Vacancies', default=1, tracking=True)
     qualification = fields.Char(string='Qualification')
     skill_ids = fields.Many2many('manpower.skill', string='Skills')
     location = fields.Char(string='Location')
+    closing_date = fields.Date(string='Target / Closing Date', tracking=True)
+    job_description = fields.Text(string='Job Description / Scope')
     reason = fields.Selection([
         ('new_position', 'New Position'),
         ('replacement', 'Replacement'),
@@ -101,6 +113,10 @@ class ManpowerRequirement(models.Model):
 
     opening_ids = fields.One2many('manpower.job.opening', 'requirement_id', string='Job Openings')
     opening_count = fields.Integer(compute='_compute_opening_count')
+    application_ids = fields.One2many('manpower.application', 'requirement_id', string='Applications')
+    application_count = fields.Integer(compute='_compute_application_count', string='Applications')
+    new_application_count = fields.Integer(compute='_compute_application_count', string='New Applications')
+    in_progress_application_count = fields.Integer(compute='_compute_application_count', string='In Progress')
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
 
     is_ceo = fields.Boolean(compute='_compute_user_role')
@@ -123,22 +139,88 @@ class ManpowerRequirement(models.Model):
         for rec in self:
             rec.opening_count = len(rec.opening_ids)
 
+    @api.depends('application_ids', 'application_ids.stage')
+    def _compute_application_count(self):
+        for rec in self:
+            rec.application_count = len(rec.application_ids)
+            rec.new_application_count = len(rec.application_ids.filtered(lambda app: app.stage == 'new'))
+            rec.in_progress_application_count = len(rec.application_ids.filtered(
+                lambda app: app.stage not in ('new', 'contract_signed', 'cancelled')))
+
     @api.onchange('task_id')
     def _onchange_task_id(self):
         if self.task_id:
             if self.task_id.project_id and not self.project_id:
                 self.project_id = self.task_id.project_id
-            if not self.job_title:
-                self.job_title = self.task_id.name
+            self.job_title = self.task_id.name
             if self.task_id.client_id:
                 self.client_id = self.task_id.client_id
             elif self.task_id.partner_id:
                 self.client_id = self.task_id.partner_id
 
+    @api.onchange('job_title')
+    def _onchange_job_title(self):
+        if self.job_title and not self.task_id:
+            proj_id = self.project_id.id if self.project_id else self._default_project_id()
+            if proj_id:
+                task = self.env['project.task'].search([
+                    ('project_id', '=', proj_id),
+                    ('name', '=ilike', self.job_title.strip()),
+                ], limit=1)
+                if task:
+                    self.task_id = task.id
+
     @api.onchange('project_id')
     def _onchange_project_id(self):
         if self.project_id and self.project_id.partner_id and not self.client_id:
             self.client_id = self.project_id.partner_id
+
+    @api.model
+    def _format_partner_address(self, partner):
+        if not partner:
+            return ''
+        addr_text = ''
+        if hasattr(partner, '_display_address'):
+            addr_text = partner._display_address().strip()
+        if not addr_text:
+            parts = [
+                partner.street,
+                partner.street2,
+                ", ".join(filter(None, [partner.city, partner.state_id.name, partner.zip])),
+                partner.country_id.name,
+            ]
+            addr_text = "\n".join([p for p in parts if p and p.strip()])
+        return addr_text
+
+    @api.depends('name', 'client_id', 'client_company_name', 'job_title')
+    def _compute_display_name(self):
+        for rec in self:
+            parts = [rec.name or '']
+            cname = rec.client_id.name or rec.client_company_name
+            if cname:
+                parts.append(cname)
+            if rec.job_title:
+                parts.append(rec.job_title)
+            rec.display_name = " - ".join([p for p in parts if p])
+
+    @api.onchange('client_id')
+    def _onchange_client_id(self):
+        if self.client_id:
+            partner = self.client_id
+            self.client_email = partner.email or ''
+            self.client_phone = partner.phone or getattr(partner, 'mobile', '') or ''
+            self.client_address = self._format_partner_address(partner)
+            self.client_company_name = (
+                partner.parent_id.name if partner.parent_id
+                else (partner.name if partner.is_company else '')
+            )
+            self.client_contact_name = partner.name if not partner.is_company else ''
+        else:
+            self.client_email = False
+            self.client_phone = False
+            self.client_address = False
+            self.client_company_name = False
+            self.client_contact_name = False
 
     @api.constrains('vacancies', 'experience_min', 'experience_max', 'salary_min', 'salary_max')
     def _check_values(self):
@@ -164,6 +246,50 @@ class ManpowerRequirement(models.Model):
                 default_proj = self._default_project_id()
                 if default_proj:
                     vals['project_id'] = default_proj
+
+            # Automatically fill Job Role (task_id / job_title)
+            proj_id = vals.get('project_id')
+            if not vals.get('task_id') and vals.get('job_title'):
+                job_title_clean = vals['job_title'].strip()
+                Task = self.env['project.task'].sudo()
+                task = False
+                if proj_id:
+                    task = Task.search([
+                        ('project_id', '=', proj_id),
+                        ('name', '=ilike', job_title_clean)
+                    ], limit=1)
+                if not task and proj_id:
+                    task = Task.create({
+                        'name': job_title_clean,
+                        'project_id': proj_id,
+                        'partner_id': vals.get('client_id') or False,
+                        'client_id': vals.get('client_id') or False,
+                        'hiring_required': True,
+                        'hiring_submitted': True,
+                    })
+                if task:
+                    vals['task_id'] = task.id
+            elif vals.get('task_id') and not vals.get('job_title'):
+                task = self.env['project.task'].browse(vals['task_id'])
+                if task.exists():
+                    vals['job_title'] = task.name
+
+            # Automatically fill Client contact info if client_id is provided
+            if vals.get('client_id'):
+                partner = self.env['res.partner'].browse(vals['client_id'])
+                if partner.exists():
+                    if not vals.get('client_email') and partner.email:
+                        vals['client_email'] = partner.email
+                    partner_phone = partner.phone or getattr(partner, 'mobile', '')
+                    if not vals.get('client_phone') and partner_phone:
+                        vals['client_phone'] = partner_phone
+                    if not vals.get('client_address'):
+                        vals['client_address'] = self._format_partner_address(partner)
+                    if not vals.get('client_company_name'):
+                        vals['client_company_name'] = partner.parent_id.name if partner.parent_id else (partner.name if partner.is_company else '')
+                    if not vals.get('client_contact_name') and not partner.is_company:
+                        vals['client_contact_name'] = partner.name
+
             if vals.get('state') == 'pending_approval' and not vals.get('submitted_date'):
                 vals['submitted_date'] = fields.Datetime.now()
         return super().create(vals_list)
@@ -174,6 +300,16 @@ class ManpowerRequirement(models.Model):
                 and not user.has_group(GROUP_PROJECT_MANAGER)
                 and not user.has_group(GROUP_HR) and not user.has_group(GROUP_CEO)):
             raise AccessError(_('Consultants are not allowed to modify hiring requests.'))
+        if vals.get('client_id'):
+            partner = self.env['res.partner'].browse(vals['client_id'])
+            if partner.exists():
+                if 'client_email' not in vals and partner.email:
+                    vals['client_email'] = partner.email
+                partner_phone = partner.phone or getattr(partner, 'mobile', '')
+                if 'client_phone' not in vals and partner_phone:
+                    vals['client_phone'] = partner_phone
+                if 'client_address' not in vals:
+                    vals['client_address'] = self._format_partner_address(partner)
         return super().write(vals)
 
     def unlink(self):
@@ -265,7 +401,6 @@ class ManpowerRequirement(models.Model):
             # Copy the approved requirement so the opening is fully populated as
             # soon as its form is displayed.
             'title': self.job_title,
-            'department_id': self.department_id.id if self.department_id else False,
             'vacancies': self.vacancies,
             'location': self.location,
             'qualification': self.qualification,
@@ -275,6 +410,8 @@ class ManpowerRequirement(models.Model):
             'currency_id': self.currency_id.id,
             'salary_min': self.salary_min,
             'salary_max': self.salary_max,
+            'closing_date': self.closing_date,
+            'description': self.job_description or '',
         })
         return {
             'type': 'ir.actions.act_window',
@@ -292,6 +429,20 @@ class ManpowerRequirement(models.Model):
             'view_mode': 'list,form',
             'domain': [('requirement_id', '=', self.id)],
             'context': {'default_requirement_id': self.id},
+        }
+
+    def action_view_applications(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Applications - %s') % (self.name or self.job_title),
+            'res_model': 'manpower.application',
+            'view_mode': 'kanban,list,form',
+            'domain': [('requirement_id', '=', self.id)],
+            'context': {
+                'default_requirement_id': self.id,
+                'search_default_group_by_stage': 1,
+            },
         }
 
     def action_open_client_update_wizard(self):

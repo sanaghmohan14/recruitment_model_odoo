@@ -44,6 +44,7 @@
                 <field name="name"/>
                 <field name="applicant_name"/>
                 <field name="job_opening_id"/>
+                <field name="requirement_id" optional="show"/>
                 <field name="client_id" optional="show"/>
                 <field name="mobile" optional="show"/>
                 <field name="email" optional="show"/>
@@ -106,6 +107,7 @@
                     <group>
                         <group string="Application Details">
                             <field name="job_opening_id"/>
+                            <field name="requirement_id" readonly="1"/>
                             <field name="client_id"/>
                             <field name="email" widget="email"/>
 <!--                            <field name="phone" widget="phone"/>-->
@@ -196,9 +198,11 @@
                 <field name="name"/>
                 <field name="applicant_name"/>
                 <field name="job_opening_id"/>
+                <field name="requirement_id"/>
                 <field name="client_id"/>
                 <field name="email"/>
                 <group>
+                    <filter name="group_by_requirement" string="Requirement" context="{'group_by': 'requirement_id'}"/>
                     <filter name="group_by_client" string="Client" context="{'group_by': 'client_id'}"/>
                     <filter name="group_by_position" string="Job Position" context="{'group_by': 'job_opening_id'}"/>
                     <filter name="group_by_stage" string="Stage" context="{'group_by': 'stage'}"/>

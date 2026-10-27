@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Website Navigation Menu -->
+    <record id="menu_website_manpower_requirement" model="website.menu">
+        <field name="name">Client Requirement</field>
+        <field name="url">/manpower/requirement</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">55</field>
+    </record>
+
+    <!-- Simple Client Manpower Requirement Form Template -->
+    <template id="manpower_client_requirement_form" name="Manpower Requirement Form">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-4">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <h2 class="mb-2">Manpower Requirement Form</h2>
+                            <p class="text-muted mb-4">Please fill in the form below with your staffing requirement.</p>
+
+                            <div t-if="error" class="alert alert-danger mb-3" role="alert">
+                                <t t-esc="error"/>
+                            </div>
+
+                            <form action="/manpower/requirement/submit" method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label fw-bold" for="client_partner_id">Name <span class="text-danger">*</span></label>
+                                        <select name="client_id" id="client_partner_id" required="required" class="form-select">
+                                            <option value="">Select Partner / Client...</option>
+                                            <t t-foreach="partners or []" t-as="p">
+                                                <option t-att-value="p.id"
+                                                        t-att-data-email="p.email or ''"
+                                                        t-att-data-phone="p.phone or ''"
+                                                        t-att-selected="'selected' if (post and (str(post.get('client_id')) == str(p.id) or str(post.get('partner_id')) == str(p.id))) else None">
+                                                    <t t-esc="p.display_name"/>
+                                                </option>
+                                            </t>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Contact No <span class="text-danger">*</span></label>
+                                        <input name="client_phone" type="tel" required="required" class="form-control"
+                                               placeholder="Phone / Mobile Number"
+                                               t-att-value="post.get('client_phone') or post.get('contact_no') or post.get('phone') if post else ''"/>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                                        <input name="client_email" type="email" required="required" class="form-control"
+                                               placeholder="Email Address"
+                                               t-att-value="post.get('client_email') or post.get('email') if post else ''"/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label class="form-label fw-bold">Job Role <span class="text-danger">*</span></label>
+                                        <input name="job_title" type="text" required="required" class="form-control"
+                                               list="job_roles_list"
+                                               placeholder="Job Role / Position"
+                                               t-att-value="post.get('job_title') or post.get('job_role') or post.get('role') if post else ''"/>
+                                        <datalist id="job_roles_list">
+                                            <t t-foreach="job_roles or []" t-as="role">
+                                                <option t-att-value="role"/>
+                                            </t>
+                                        </datalist>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold">No. of Vacancies</label>
+                                        <input name="vacancies" type="number" min="1" class="form-control"
+                                               value="1"
+                                               t-att-value="post.get('vacancies', 1) if post else 1"/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Qualification</label>
+                                        <input name="qualification" type="text" class="form-control"
+                                               placeholder="e.g. B.Tech, Graduate, MBA"
+                                               t-att-value="post.get('qualification') if post else ''"/>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Years of Experience</label>
+                                        <div class="input-group">
+                                            <input name="experience_min" type="number" step="0.5" min="0" class="form-control"
+                                                   placeholder="Min"
+                                                   t-att-value="post.get('experience_min') or post.get('years_of_experience') if post else ''"/>
+                                            <span class="input-group-text">to</span>
+                                            <input name="experience_max" type="number" step="0.5" min="0" class="form-control"
+                                                   placeholder="Max (years)"
+                                                   t-att-value="post.get('experience_max') if post else ''"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Job Location <span class="text-danger">*</span></label>
+                                        <input name="location" type="text" required="required" class="form-control"
+                                               placeholder="Job Location"
+                                               t-att-value="post.get('location') or post.get('job_location') if post else ''"/>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Closing Date</label>
+                                        <input name="closing_date" type="date" class="form-control"
+                                               t-att-value="post.get('closing_date') if post else ''"/>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Salary Range / Budget</label>
+                                        <div class="input-group">
+                                            <input name="salary_min" type="number" step="any" min="0" class="form-control"
+                                                   placeholder="Min"
+                                                   t-att-value="post.get('salary_min') if post else ''"/>
+                                            <span class="input-group-text">to</span>
+                                            <input name="salary_max" type="number" step="any" min="0" class="form-control"
+                                                   placeholder="Max"
+                                                   t-att-value="post.get('salary_max') if post else ''"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Key Skills</label>
+                                        <input name="custom_skills" type="text" class="form-control"
+                                               placeholder="e.g. Python, SQL, Excel (comma separated)"
+                                               t-att-value="post.get('custom_skills') if post else ''"/>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Job Description / Requirements</label>
+                                    <textarea name="job_description" class="form-control" rows="4"
+                                              placeholder="Enter responsibilities or other details..."><t t-if="post and (post.get('job_description') or post.get('description'))" t-esc="post.get('job_description') or post.get('description')"/></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                                </div>
+                            </form>
+                            <script type="text/javascript">
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    var partnerSelect = document.getElementById('client_partner_id');
+                                    var emailInput = document.querySelector('input[name="client_email"]');
+                                    var phoneInput = document.querySelector('input[name="client_phone"]');
+                                    if (partnerSelect) {
+                                        partnerSelect.addEventListener('change', function () {
+                                            var selectedOpt = partnerSelect.options[partnerSelect.selectedIndex];
+                                            if (selectedOpt) {
+                                                var email = selectedOpt.getAttribute('data-email');
+                                                var phone = selectedOpt.getAttribute('data-phone');
+                                                if (emailInput &amp;&amp; email) {
+                                                    emailInput.value = email;
+                                                }
+                                                if (phoneInput &amp;&amp; phone) {
+                                                    phoneInput.value = phone;
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Simple Thank-You Page Template -->
+    <template id="manpower_client_requirement_thanks" name="Requirement Submitted">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <section class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8 text-center">
+                            <h2 class="text-success mb-2">Thank You!</h2>
+                            <p class="lead mb-4">Your manpower requirement has been submitted successfully.</p>
+                            <p class="fs-5">Reference: <strong t-esc="requirement.name"/></p>
+
+                            <div class="card mt-4 text-start">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3">Submitted Details</h5>
+                                    <table class="table table-bordered mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <th style="width: 35%;">Name</th>
+                                                <td><t t-esc="requirement.client_id.display_name or requirement.client_contact_name or 'N/A'"/></td>
+                                            </tr>
+                                            <tr t-if="requirement.client_company_name">
+                                                <th>Company Name</th>
+                                                <td><t t-esc="requirement.client_company_name"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Contact No</th>
+                                                <td><t t-esc="requirement.client_phone or 'N/A'"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email</th>
+                                                <td><t t-esc="requirement.client_email or 'N/A'"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Job Role</th>
+                                                <td><t t-esc="requirement.task_id.name or requirement.job_title"/></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Vacancies</th>
+                                                <td><t t-esc="requirement.vacancies"/></td>
+                                            </tr>
+                                            <tr t-if="requirement.qualification">
+                                                <th>Qualification</th>
+                                                <td><t t-esc="requirement.qualification"/></td>
+                                            </tr>
+                                            <tr t-if="requirement.experience_min or requirement.experience_max">
+                                                <th>Experience</th>
+                                                <td>
+                                                    <t t-if="requirement.experience_min and requirement.experience_max">
+                                                        <t t-esc="requirement.experience_min"/> - <t t-esc="requirement.experience_max"/> years
+                                                    </t>
+                                                    <t t-elif="requirement.experience_min">
+                                                        <t t-esc="requirement.experience_min"/>+ years
+                                                    </t>
+                                                    <t t-elif="requirement.experience_max">
+                                                        Up to <t t-esc="requirement.experience_max"/> years
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr t-if="requirement.location">
+                                                <th>Job Location</th>
+                                                <td><t t-esc="requirement.location"/></td>
+                                            </tr>
+                                            <tr t-if="requirement.closing_date">
+                                                <th>Closing Date</th>
+                                                <td><t t-esc="requirement.closing_date" t-options="{'widget': 'date'}"/></td>
+                                            </tr>
+                                            <tr t-if="requirement.salary_min or requirement.salary_max">
+                                                <th>Salary Range</th>
+                                                <td>
+                                                    <t t-if="requirement.salary_min and requirement.salary_max">
+                                                        <t t-esc="requirement.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(requirement.salary_min)"/> - <t t-esc="requirement.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(requirement.salary_max)"/>
+                                                    </t>
+                                                    <t t-elif="requirement.salary_min">
+                                                        From <t t-esc="requirement.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(requirement.salary_min)"/>
+                                                    </t>
+                                                    <t t-elif="requirement.salary_max">
+                                                        Up to <t t-esc="requirement.currency_id.symbol"/><t t-esc="'{:,.0f}'.format(requirement.salary_max)"/>
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <a href="/manpower/requirement" class="btn btn-outline-primary me-2">Submit Another Requirement</a>
+                                <a href="/manpower/jobs" class="btn btn-secondary">View Job Openings</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

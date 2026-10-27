@@ -22,7 +22,7 @@ class ManpowerRequirementClientWizard(models.TransientModel):
             client = requirement.client_id
             values['requirement_id'] = requirement.id
             values['client_id'] = client.id if client else False
-            values['email_to'] = client.email if client else ''
+            values['email_to'] = (client.email if client else '') or requirement.client_email or ''
 
             stage_dict = dict(requirement._fields['state'].selection)
             stage_label = stage_dict.get(requirement.state, requirement.state)
@@ -55,6 +55,8 @@ class ManpowerRequirementClientWizard(models.TransientModel):
             details.append((_('Project'), requirement.project_id.name))
         if requirement.task_id:
             details.append((_('Job Role / Task'), requirement.task_id.name))
+        elif requirement.job_title:
+            details.append((_('Job Role'), requirement.job_title))
         if requirement.experience_min or requirement.experience_max:
             exp_text = f"{requirement.experience_min or 0} - {requirement.experience_max or 0} " + _("years")
             details.append((_('Required Experience'), exp_text))
@@ -65,6 +67,10 @@ class ManpowerRequirementClientWizard(models.TransientModel):
             details.append((_('Skills Required'), skills))
         if requirement.location:
             details.append((_('Location'), requirement.location))
+        if requirement.client_address:
+            details.append((_('Client Address'), requirement.client_address.replace('\n', ', ')))
+        if requirement.closing_date:
+            details.append((_('Target / Closing Date'), str(requirement.closing_date)))
         if requirement.joining_requirement:
             joining_dict = dict(requirement._fields['joining_requirement'].selection or [])
             joining_text = joining_dict.get(requirement.joining_requirement, requirement.joining_requirement)

@@ -37,8 +37,7 @@ class ManpowerJobOpening(models.Model):
     # Copied from the requirement, editable by HR
     title = fields.Char(string='Job Title', compute='_compute_from_requirement',
                         store=True, readonly=False, required=True, tracking=True)
-    department_id = fields.Many2one('hr.department', compute='_compute_from_requirement',
-                                    store=True, readonly=False)
+    department_id = fields.Many2one('hr.department', string='Department', tracking=True)
     project_id = fields.Many2one('project.project', related='requirement_id.project_id', store=True, string='Project')
     task_id = fields.Many2one('project.task', related='requirement_id.task_id', store=True, string='Job Role')
     client_id = fields.Many2one('res.partner', related='requirement_id.client_id', store=True, string='Client / Partner')
@@ -116,7 +115,6 @@ class ManpowerJobOpening(models.Model):
         for rec in self:
             req = rec.requirement_id
             rec.title = req.job_title or rec.title
-            rec.department_id = req.department_id
             rec.vacancies = req.vacancies
             rec.location = req.location
             rec.qualification = req.qualification
@@ -125,6 +123,10 @@ class ManpowerJobOpening(models.Model):
             rec.currency_id = req.currency_id
             rec.salary_min = req.salary_min
             rec.salary_max = req.salary_max
+            if req.closing_date and not rec.closing_date:
+                rec.closing_date = req.closing_date
+            if req.job_description and not rec.description:
+                rec.description = req.job_description
 
     @api.constrains('requirement_id', 'vacancies', 'state')
     def _check_requirement(self):

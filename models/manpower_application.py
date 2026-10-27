@@ -39,9 +39,18 @@ class ManpowerApplication(models.Model):
     job_opening_id = fields.Many2one(
         'manpower.job.opening', string='Job Position', required=True,
         ondelete='restrict', tracking=True)
+    requirement_id = fields.Many2one(
+        'manpower.requirement', string='Requirement',
+        compute='_compute_requirement_id', store=True, readonly=False,
+        index=True)
     client_id = fields.Many2one(
         'res.partner', string='Client', related='job_opening_id.client_id',
         store=True, readonly=True)
+
+    @api.depends('job_opening_id', 'job_opening_id.requirement_id')
+    def _compute_requirement_id(self):
+        for rec in self:
+            rec.requirement_id = rec.job_opening_id.requirement_id if rec.job_opening_id else False
     stage = fields.Selection(
         APPLICATION_STAGES, string='Stage', default='new', required=True, tracking=True,
         group_expand='_read_group_stage')

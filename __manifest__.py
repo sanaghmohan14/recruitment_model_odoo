@@ -26,6 +26,7 @@ Workflow: Dept Head creates hiring request -> Project Manager reviews -> CEO app
         'views/application_client_wizard_views.xml',
         'views/menus.xml',
         'views/website_job_opening_templates.xml',
+        'views/website_requirement_templates.xml',
     ],
     'application': True,
     'installable': True,

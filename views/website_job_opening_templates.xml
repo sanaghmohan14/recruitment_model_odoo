@@ -4,7 +4,13 @@
         <t t-call="website.layout">
             <div id="wrap" class="oe_structure">
                 <section class="container py-5">
-                    <h1>Open Positions</h1>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="mb-0">Open Positions</h1>
+                        <a href="/manpower/requirement" class="btn btn-outline-primary">
+                            Submit Manpower Requirement
+                        </a>
+                    </div>
+
                     <div class="row mt-4">
                         <t t-foreach="jobs" t-as="job">
                             <div class="col-lg-6 mb-4">
@@ -89,11 +95,11 @@
                 <section class="container py-5">
                     <div class="row">
                         <!-- Left Column: Job Details -->
-                        <div class="col-lg-7">
-                            <h1 t-esc="job.title"/>
+                        <div class="col-lg-5 mb-4">
+                            <h1 class="h2 mb-3" t-esc="job.title"/>
 
                             <!-- Key Details Summary -->
-                            <div class="card bg-light mb-4">
+                            <div class="card bg-light mb-4 shadow-sm border-0">
                                 <div class="card-body">
                                     <div class="row">
                                         <!-- Location -->
@@ -172,8 +178,8 @@
                                         </div>
                                     </div>
 
-                                    <!-- Skills (full width row) -->
-                                    <div t-if="job.skill_ids" class="mt-2">
+                                    <!-- Skills -->
+                                    <div t-if="job.skill_ids" class="mt-2 pt-2 border-top">
                                         <i class="fa fa-cogs me-2 text-primary"/>
                                         <strong>Skills Required:</strong>
                                         <div class="mt-1">
@@ -186,38 +192,179 @@
                             </div>
 
                             <!-- Job Description -->
-                            <h4>Job Description</h4>
-                            <div t-field="job.description"/>
+                            <h4 class="mb-3">Job Description</h4>
+                            <div class="card p-3 shadow-sm border-0 mb-4" t-field="job.description"/>
+
+                            <!-- Client Hiring Link -->
+                            <div class="mb-4">
+                                <a t-attf-href="/manpower/requirement?job_role=#{job.title}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fa fa-building-o me-1"/> Need to hire for this position? Submit a Client Requirement
+                                </a>
+                            </div>
                         </div>
 
-                        <!-- Right Column: Apply Form -->
-                        <div class="col-lg-5">
-                            <div class="card shadow-sm sticky-top" style="top: 80px;">
-                                <div class="card-body">
-                                    <h3>Apply for this position</h3>
+                        <!-- Right Column: Comprehensive Application Form -->
+                        <div class="col-lg-7">
+                            <div class="card shadow-sm border-0">
+                                <div class="card-body p-4">
+                                    <h3 class="mb-3">Apply for this Position</h3>
 
-                                    <!-- Closing date warning -->
-                                    <div t-if="job.closing_date" class="alert alert-info py-2 mb-3">
+                                    <!-- Closing date notice -->
+                                    <div t-if="job.closing_date and not job.is_expired" class="alert alert-info py-2 mb-3">
                                         <i class="fa fa-clock-o me-1"/>
                                         Applications close on <strong t-esc="job.closing_date" t-options="{'widget': 'date'}"/>
                                     </div>
 
-                                    <p class="text-danger" t-if="error" t-esc="error"/>
-                                    <form t-att-action="job._get_website_url() + '/apply'" method="post">
+                                    <div t-if="job.is_expired" class="alert alert-warning py-2 mb-3">
+                                        <i class="fa fa-exclamation-triangle me-1"/>
+                                        This job opening has expired and is no longer accepting applications.
+                                    </div>
+
+                                    <p class="alert alert-danger py-2" t-if="error" t-esc="error"/>
+
+                                    <form t-if="not job.is_expired" t-att-action="job._get_website_url() + '/apply'" method="post">
                                         <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                        <div class="mb-3">
-                                            <label class="form-label">Name</label>
-                                            <input name="applicant_name" required="required" class="form-control"/>
+
+                                        <!-- 1. Personal Details -->
+                                        <h5 class="text-primary border-bottom pb-2 mb-3">
+                                            <i class="fa fa-user me-2"/>Personal Details
+                                        </h5>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                                <input name="applicant_name" required="required" class="form-control"
+                                                       placeholder="e.g. John Doe"
+                                                       t-att-value="post.get('applicant_name') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                                <input name="email" type="email" required="required" class="form-control"
+                                                       placeholder="e.g. john.doe@example.com"
+                                                       t-att-value="post.get('email') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                                                <input name="mobile" type="tel" required="required" class="form-control"
+                                                       placeholder="e.g. +91 9876543210"
+                                                       t-att-value="post.get('mobile') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Alternate Phone</label>
+                                                <input name="phone" type="tel" class="form-control"
+                                                       placeholder="e.g. +91 9876543211"
+                                                       t-att-value="post.get('phone') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Date of Birth</label>
+                                                <input name="date_of_birth" type="date" class="form-control"
+                                                       t-att-value="post.get('date_of_birth') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Gender</label>
+                                                <select name="gender" class="form-select">
+                                                    <option value="">Select Gender</option>
+                                                    <option value="male" t-att-selected="'selected' if post and post.get('gender') == 'male' else None">Male</option>
+                                                    <option value="female" t-att-selected="'selected' if post and post.get('gender') == 'female' else None">Female</option>
+                                                    <option value="other" t-att-selected="'selected' if post and post.get('gender') == 'other' else None">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">City / Location</label>
+                                                <input name="address" class="form-control"
+                                                       placeholder="e.g. Mumbai, Maharashtra"
+                                                       t-att-value="post.get('address') if post else ''"/>
+                                            </div>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Email</label>
-                                            <input name="email" type="email" required="required" class="form-control"/>
+
+                                        <!-- 2. Academic / Education Details -->
+                                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                                            <i class="fa fa-graduation-cap me-2"/>Academic &amp; Education Details
+                                        </h5>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Highest Qualification</label>
+                                                <input name="highest_qualification" class="form-control"
+                                                       placeholder="e.g. B.Tech / BCA / MCA / MBA"
+                                                       t-att-value="post.get('highest_qualification') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Specialization</label>
+                                                <input name="specialization" class="form-control"
+                                                       placeholder="e.g. Computer Science / Information Tech"
+                                                       t-att-value="post.get('specialization') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Institution / University</label>
+                                                <input name="institution" class="form-control"
+                                                       placeholder="e.g. University / College name"
+                                                       t-att-value="post.get('institution') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">Graduation Year</label>
+                                                <input name="graduation_year" class="form-control"
+                                                       placeholder="e.g. 2022"
+                                                       t-att-value="post.get('graduation_year') if post else ''"/>
+                                            </div>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Phone</label>
-                                            <input name="phone" class="form-control"/>
+
+                                        <!-- 3. Professional Experience -->
+                                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                                            <i class="fa fa-briefcase me-2"/>Professional Experience
+                                        </h5>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Total Experience (Years)</label>
+                                                <input name="total_experience" type="number" step="0.5" min="0" class="form-control"
+                                                       placeholder="e.g. 3.5"
+                                                       t-att-value="post.get('total_experience') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Current Employer</label>
+                                                <input name="current_employer" class="form-control"
+                                                       placeholder="e.g. ABC Technologies"
+                                                       t-att-value="post.get('current_employer') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Current Designation</label>
+                                                <input name="current_designation" class="form-control"
+                                                       placeholder="e.g. Software Engineer"
+                                                       t-att-value="post.get('current_designation') if post else ''"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label fw-semibold">Experience Details / Summary</label>
+                                                <textarea name="experience_details" class="form-control" rows="3"
+                                                          placeholder="Key responsibilities, projects, and technologies worked on..."><t t-if="post and post.get('experience_details')" t-esc="post.get('experience_details')"/></textarea>
+                                            </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary w-100">Submit Application</button>
+
+                                        <!-- 4. Compensation & Availability -->
+                                        <h5 class="text-primary border-bottom pb-2 mb-3 mt-4">
+                                            <i class="fa fa-money me-2"/>Salary &amp; Notice Period
+                                        </h5>
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Current Salary (<t t-esc="job.currency_id.symbol"/>)</label>
+                                                <input name="current_salary" type="number" step="any" min="0" class="form-control"
+                                                       placeholder="Annual CTC"
+                                                       t-att-value="post.get('current_salary') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Expected Salary (<t t-esc="job.currency_id.symbol"/>)</label>
+                                                <input name="expected_salary" type="number" step="any" min="0" class="form-control"
+                                                       placeholder="Expected CTC"
+                                                       t-att-value="post.get('expected_salary') if post else ''"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-semibold">Notice Period</label>
+                                                <input name="notice_period" class="form-control"
+                                                       placeholder="e.g. Immediate / 30 Days"
+                                                       t-att-value="post.get('notice_period') if post else ''"/>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fa fa-paper-plane me-2"/>Submit Application
+                                        </button>
                                     </form>
                                 </div>
                             </div>

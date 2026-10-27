@@ -19,6 +19,9 @@
     <menuitem id="menu_manpower_application_all" name="All Applications"
               parent="menu_manpower_application" action="action_manpower_application" sequence="10"/>
 
+    <menuitem id="menu_manpower_application_by_requirement" name="By Requirement"
+              parent="menu_manpower_application" action="action_manpower_application_by_requirement" sequence="15"/>
+
     <menuitem id="menu_manpower_application_by_position" name="By Job Position"
               parent="menu_manpower_application" action="action_manpower_application_by_position" sequence="20"/>
 
